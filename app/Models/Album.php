@@ -4,9 +4,14 @@ namespace App\Models;
 
 use Carbon\CarbonImmutable;
 use Database\Factories\AlbumFactory;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
@@ -14,50 +19,111 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * @property string $title
  * @property string $slug
  * @property int $order
- * @property string $description
- * @property int $category_id
- * @property int $location_id
+ * @property string|null $description
+ * @property int|null $category_id
+ * @property int|null $location_id
  * @property string|null $date_start
  * @property string|null $date_end
  * @property string|null $published_at
  * @property string|null $archived_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
+ * @property-read \App\Models\Category|null $category
  * @property-read Collection<int, \App\Models\Image> $images
  * @property-read int|null $images_count
+ * @property-read mixed $items
+ * @property-read \App\Models\Location|null $location
+ * @property mixed $published
  * @property-read Collection<int, \App\Models\TextBox> $text_boxes
  * @property-read int|null $text_boxes_count
  * @method static \Database\Factories\AlbumFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereArchivedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereCategoryId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereDateEnd($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereDateStart($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereLocationId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereOrder($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album wherePublishedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereSlug($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereTitle($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Album whereUpdatedAt($value)
+ * @method static Builder<static>|Album isArchived()
+ * @method static Builder<static>|Album isPublished()
+ * @method static Builder<static>|Album newModelQuery()
+ * @method static Builder<static>|Album newQuery()
+ * @method static Builder<static>|Album query()
+ * @method static Builder<static>|Album whereArchivedAt($value)
+ * @method static Builder<static>|Album whereCategoryId($value)
+ * @method static Builder<static>|Album whereCreatedAt($value)
+ * @method static Builder<static>|Album whereDateEnd($value)
+ * @method static Builder<static>|Album whereDateStart($value)
+ * @method static Builder<static>|Album whereDescription($value)
+ * @method static Builder<static>|Album whereId($value)
+ * @method static Builder<static>|Album whereLocationId($value)
+ * @method static Builder<static>|Album whereOrder($value)
+ * @method static Builder<static>|Album wherePublishedAt($value)
+ * @method static Builder<static>|Album whereSlug($value)
+ * @method static Builder<static>|Album whereTitle($value)
+ * @method static Builder<static>|Album whereUpdatedAt($value)
  * @mixin \Eloquent
  */
+#[Appends(['published'])]
 class Album extends Model
 {
     /** @use HasFactory<AlbumFactory> */
     use HasFactory;
 
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
+    }
+
     public function images(): MorphToMany
     {
-        return $this->morphToMany(Image::class, 'album_item');
+        return $this->morphedByMany(Image::class, 'album_item');
     }
 
     public function text_boxes(): MorphToMany
     {
-        return $this->morphToMany(TextBox::class, 'album_item');
+        return $this->morphedByMany(TextBox::class, 'album_item');
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (Album $album) {
+            $album->slug = \Str::slug($album->title);
+        });
+    }
+
+    #[Scope]
+    protected function isPublished(Builder $query): void
+    {
+        $query->whereNotNull('published_at');
+    }
+
+    #[Scope]
+    protected function isArchived(Builder $query): void
+    {
+        $query->whereNotNull('archived_at');
+    }
+
+    protected function published(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->published_at !== null,
+        );
+    }
+
+    protected function items(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $images = $this->images()
+                    ->withPivot('order')
+                    ->orderBy('order')
+                    ->get();
+                $texts = $this->text_boxes()
+                    ->withPivot('order')
+                    ->orderBy('order')
+                    ->get();
+
+                return collect()->merge($images)->merge($texts)->sortBy('order');
+            }
+        );
     }
 }

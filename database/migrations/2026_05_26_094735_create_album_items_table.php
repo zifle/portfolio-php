@@ -13,10 +13,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('album_items', function (Blueprint $table) {
-            $table->foreignIdFor(Album::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignIdFor(Album::class)
+                ->constrained()
+                ->cascadeOnDelete()->cascadeOnUpdate();
             $table->morphs('album_item');
             $table->unsignedInteger('order');
-            $table->timestamps();
         });
     }
 

@@ -2,7 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Album;
+use App\Models\Category;
+use App\Models\Location;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,13 +39,25 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $locations = Location::all();
+        $categories = Category::orderBy('order')->get();
+        $albums = Album::with(['category', 'location']);
+        if (Auth::guest()) {
+            $albums->whereNotNull('published_at');
+        }
+        $albums = $albums->get();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
             ],
+            'csrf_token' => csrf_token(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'locations' => $locations,
+            'categories' => $categories,
+            'albums' => $albums,
         ];
     }
 }

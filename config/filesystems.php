@@ -15,6 +15,8 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    'uploads_disk' => env('UPLOAD_DISK', 'uploads'),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks
@@ -42,6 +44,15 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'uploads' => [
+            'driver' => 'local',
+            'root' => storage_path('app/uploads'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/uploads',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -75,6 +86,7 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        public_path('uploads') => storage_path('app/uploads'),
     ],
 
 ];

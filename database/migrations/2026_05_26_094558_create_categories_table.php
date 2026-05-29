@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->tinyInteger('order')->default(0);
-            $table->timestamps();
         });
     }
 

@@ -15,21 +15,33 @@ return new class extends Migration
     {
         Schema::create('images', function (Blueprint $table) {
             $table->id();
-            $table->string('path');
+            $table->string('path')->index();
+            $table->dateTime('date_taken')->index();
             $table->json('available_res')->default('[]');
             $table->unsignedSmallInteger('max_width');
             $table->unsignedSmallInteger('max_height');
-            $table->text('description')->nullable()->default(null);
+            $table->text('description')
+                ->nullable()->default(null);
 
-            $table->foreignIdFor(Camera::class)->constrained()->cascadeOnUpdate()->nullOnDelete();
-            $table->foreignIdFor(Lens::class)->constrained()->cascadeOnUpdate()->nullOnDelete();
+            $table->foreignIdFor(Camera::class)
+                ->nullable()->default(null)
+                ->constrained()
+                ->cascadeOnUpdate()->nullOnDelete();
+            $table->foreignIdFor(Lens::class)
+                ->nullable()->default(null)
+                ->constrained()
+                ->cascadeOnUpdate()->nullOnDelete();
 
-            $table->dateTime('date_taken')->nullable()->default(null);
-            $table->unsignedSmallInteger('focal_length')->nullable()->default(null);
-            $table->unsignedSmallInteger('focal_length_35')->nullable()->default(null);
-            $table->string('exposure_time', 10)->nullable()->default(null);
-            $table->decimal('exposure_compensation', 4, 2)->nullable()->default(null);
-            $table->decimal('aperture', 4, 1)->nullable()->default(null);
+            $table->unsignedSmallInteger('focal_length')
+                ->nullable()->default(null);
+            $table->unsignedSmallInteger('focal_length_35')
+                ->nullable()->default(null);
+            $table->string('exposure_time', 10)
+                ->nullable()->default(null);
+            $table->decimal('exposure_compensation', 4, 2)
+                ->nullable()->default(null);
+            $table->decimal('aperture', 4, 1)
+                ->nullable()->default(null);
 
             $table->timestamps();
         });

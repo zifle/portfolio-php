@@ -18,10 +18,14 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug');
             $table->tinyInteger('order')->default(0);
-            $table->text('description');
-            $table->foreignIdFor(Category::class)->constrained()
+            $table->text('description')->nullable()->default(null);
+            $table->foreignIdFor(Category::class)
+                ->nullable()->default(null)
+                ->constrained()
                 ->cascadeOnUpdate()->nullOnDelete();
-            $table->foreignIdFor(Location::class)->constrained()
+            $table->foreignIdFor(Location::class)
+                ->nullable()->default(null)
+                ->constrained()
                 ->cascadeOnUpdate()->nullOnDelete();
             $table->date('date_start')->nullable()->default(null);
             $table->date('date_end')->nullable()->default(null);

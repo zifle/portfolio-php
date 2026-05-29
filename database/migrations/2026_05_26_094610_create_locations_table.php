@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
 
-            $table->decimal('lat', 7, 4)->nullable()->default(null);
-            $table->decimal('lng', 7, 4)->nullable()->default(null);
-            $table->timestamps();
+            $table->decimal('lat', 7, 4)
+                ->nullable()->default(null);
+            $table->decimal('lng', 7, 4)
+                ->nullable()->default(null);
         });
     }
 
