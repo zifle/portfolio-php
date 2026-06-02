@@ -3,22 +3,125 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Library\Exif;
 use App\Models\Image;
 use App\Models\Location;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ImageController extends Controller
 {
-
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        //
+
+        if (! $request->hasFile('img')) {
+            return response('Missing file "img" in request.', 404);
+        }
+        $file = $request->file('img');
+
+        $exif = new Exif($file);
+
+        $filename = $file->getClientOriginalName();
+        $dateTaken = $exif->dateTaken();
+        $path = Image::getImagePath($filename);
+        $image = Image::whereLike('path', '%'.$path)
+            ->where('date_taken', $dateTaken)
+            ->firstOrNew();
+        if (! $image->exists) {
+            $image->path = $path;
+            $image->setExif($exif);
+            $res = $this->resizeUploadedImage($file, $path, $exif->get('Orientation'));
+
+            $image->available_res = $res['available_sizes'];
+            $image->max_width = $res['max_width'];
+            $image->max_height = $res['max_height'];
+
+            $image->save();
+        }
+
+        $cameras = [];
+        if ($image->camera_id) {
+            $cameras[] = $image->camera;
+        }
+        $lenses = [];
+        if ($image->lens_id) {
+            $lenses[] = $image->lens;
+        }
+
+        return [
+            'success' => true,
+            'cameras' => $cameras,
+            'lenses' => $lenses,
+            'images' => [$image],
+            'coords' => [], // We get gps client-side
+            'date' => $image->date_taken->format('Y-m-d'),
+        ];
     }
 
+    protected function resizeUploadedImage(UploadedFile $file, string $filename, int $orientation = 1): array
+    {
+        $return = [
+            'available_sizes' => [],
+            'max_width' => 0,
+            'max_height' => 0,
+        ];
+
+        $gd = imagecreatefromjpeg($file->getRealPath());
+
+        switch ($orientation) {
+            case 3: // Rotate image 180deg
+                $gd = imagerotate($gd, 180, 0);
+                break;
+            case 6: // Rotate image 270deg
+                $gd = imagerotate($gd, 270, 0);
+                break;
+            case 8: // Rotate image 90deg
+                $gd = imagerotate($gd, 90, 0);
+                break;
+        }
+
+        $disk = Storage::disk(config('portfolio.uploads_disk'));
+        $widths = config('portfolio.image_sizes');
+        $qualities = explode(',', config('portfolio.jpeg_quality', 93));
+        $quality = intval($qualities[0]);
+        $org_width = imagesx($gd);
+        $org_height = imagesy($gd);
+        foreach ($widths as $i => $width) {
+            $width = intval($width);
+            $ratio = $width / $org_width;
+            $dst_h = floor($ratio * $org_height);
+            $im = imagecreatetruecolor($width, $dst_h);
+            imagecopyresampled($im, $gd, 0, 0, 0, 0, $width, $dst_h, $org_width, $org_height);
+            if ($im === false) {
+                Log::error('Couldn\'t scale image '.$filename);
+
+                continue;
+            }
+
+            $fname = str_replace('{0}', $width, $filename);
+            $quality = intval($qualities[$i] ?? $quality);
+
+            if (imagejpeg($im, $disk->path($fname), $quality)) {
+                $disk->setVisibility($fname, 'public');
+                $return['available_sizes'][] = $width;
+                if ($width > $return['max_width']) {
+                    $height = imagesy($im);
+                    $return['max_width'] = $width;
+                    $return['max_height'] = $height;
+                }
+            }
+        }
+
+        return $return;
+    }
 
     /**
      * Update the specified resource in storage.
@@ -38,12 +141,15 @@ class ImageController extends Controller
         $toUpload = [];
         $locs = [];
         $query = Image::with(['camera', 'lens']);
+        $subFolderLength = 0;
         foreach ($request->images as $img) {
             $path = Image::getImagePath($img['filename']);
+            [$subFolder, $path] = explode('/', $path);
+            $subFolderLength = strlen($subFolder);
             $toUpload[$path] = $img['filename'];
             $query->orWhere(function (Builder $query) use ($img, $path) {
-                $query->where('path', $path)
-                    ->where('date_taken', $img['date_taken']);
+                $query->whereLike('path', '%'.$path)
+                    ->where('date_taken', Carbon::parse($img['date_taken']));
             });
 
             if (isset($img['location'])) {
@@ -51,13 +157,21 @@ class ImageController extends Controller
             }
         }
 
-        $images = Image::get();
+        /** @var Collection<Image> $images */
+        $images = $query->get();
         $cameras = collect();
         $lenses = collect();
         foreach ($images as $image) {
-            unset($toUpload[$image->path]);
-            $cameras->add($image->camera);
-            $lenses->add($image->lens);
+            // Strip the subFolder to get the proper path
+            $path = substr($image->path, $subFolderLength + 1);
+            unset($toUpload[$path]);
+
+            if ($image->camera_id) {
+                $cameras->add($image->camera);
+            }
+            if ($image->lens_id) {
+                $lenses->add($image->lens);
+            }
         }
 
         $locations = Location::getNearby($locs);
@@ -67,7 +181,7 @@ class ImageController extends Controller
             'upload' => array_values($toUpload),
             'cameras' => $cameras->unique('id'),
             'lenses' => $lenses->unique('id'),
-            'locations' => $locations
+            'locations' => $locations,
         ];
     }
 }

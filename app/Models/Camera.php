@@ -28,6 +28,8 @@ class Camera extends Model
 
     public $timestamps = false;
 
+    protected $fillable = ['brand', 'model'];
+
     public function images(): HasMany
     {
         return $this->hasMany(Image::class);

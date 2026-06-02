@@ -1,24 +1,31 @@
-import type { Album } from './album';
+import type { Album, AlbumItemPivot } from './album';
 
 export type Image = {
     id: number;
-    title: string;
-    slug: string;
-    order: number;
-    description: string;
-    category_id: number|null;
-    location_id: number|null;
-    date_start: Date|null;
-    date_end: Date|null;
-    published_at: Date|null;
-    archived_at: Date|null;
+    path: string;
+    date_taken: string;
+    available_res: number[];
+    max_width: number;
+    max_height: number;
+    description: string|null;
+    camera_id: number|null;
+    camera: Camera|null;
+    lens_id: number|null;
+    lens: Lens|null;
+    focal_length: number|null;
+    focal_length_35: number|null;
+    exposure_time: string|null;
+    exposure_compensation: number|null;
+    aperture: number|null;
 
     created_at?: string;
     updated_at?: string;
 
+    paths?: {[key: string]: string};
     albums_count?: number;
-
     albums?: Album[];
+    order?: number;
+    pivot?: AlbumItemPivot;
 };
 
 export type Camera = {

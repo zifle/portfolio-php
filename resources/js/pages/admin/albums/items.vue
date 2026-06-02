@@ -1,15 +1,22 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
+import type { Ref } from 'vue';
 import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue';
 import { update as updateImage } from '@/routes/admin/images';
+import { store as storeText, update as updateText } from '@/routes/admin/texts';
 import {
-    store as storeText,
-    update as updateText,
-} from '@/routes/admin/texts';
+    albumItemType,
+    isImage,
+    isImageListItem,
+    isTextBox,
+    isTextListItem,
+} from '@/types/models';
 import type {
     Image,
     ImageListItem,
     ListItem,
+    AlbumListItem,
+    AlbumItem,
     TextBox,
     TextListItem,
 } from '@/types/models';
@@ -18,23 +25,29 @@ const page = usePage();
 const csrf_token = page.props.csrf_token as string;
 
 const props = defineProps(['items']);
-const album_items = props.items as (Image | TextBox)[];
+const album_items = computed(() => {
+    return props.items as AlbumItem[];
+});
 const emit = defineEmits(['albumItems', 'listItems']);
 
 let initialLoad = true;
 const itemsList = computed(() => {
-    const final_items: ListItem[] = [];
+    const final_items: AlbumListItem[] = [];
     let order = 0;
 
-    for (const item of album_items) {
+    for (const item of album_items.value) {
         order = order + 1;
 
-        const _item: ListItem = {
+        let _item = {
             id: item.id,
             order: order,
-        };
 
-        if (item.hasOwnProperty('paths')) {
+            // temp prop values
+            type: albumItemType(item) ?? 'image',
+            description: '',
+        } as AlbumListItem;
+
+        if (isImage(item)) {
             const srcset: string[] = [];
             const sizes: string[] = [];
             const max_width = item.max_width;
@@ -50,18 +63,29 @@ const itemsList = computed(() => {
             }
 
             _item['type'] = 'image';
-            _item['srcset'] = srcset.join(',');
-            _item['sizes'] = sizes.join(',');
-            _item['src'] = item.paths[max_width];
-            _item['desc'] =
-                item.description || 'Photo#' + item.id + ' in order#' + order;
-            _item['description'] = item.description;
-        } else if (item.hasOwnProperty('description')) {
+
+            if (isImageListItem(_item)) {
+                if (item.paths) {
+                    _item['src'] = item.paths[max_width];
+                }
+
+                _item['srcset'] = srcset.join(',');
+                _item['sizes'] = sizes.join(',');
+                _item['desc'] =
+                    item.description ||
+                    'Photo#' + item.id + ' in order#' + order;
+                _item['description'] = item.description;
+            }
+        } else if (isTextBox(item)) {
             // While both images and text boxes have descriptions,
             // text boxes are almost exclusively descriptions
-            _item['type'] = 'text';
-            _item['description'] = item.description;
-            _item['col_size'] = item.col_size || 1;
+            _item = _item as TextListItem;
+            _item['type'] = 'textbox';
+
+            if (isTextListItem(_item)) {
+                _item['description'] = item.description;
+                _item['col_size'] = item.col_size || 1;
+            }
         }
 
         final_items.push(_item);
@@ -73,16 +97,20 @@ const itemsList = computed(() => {
         return final_items;
     }
 
+    initialLoad = false;
+
     emit('listItems', final_items);
 
     return final_items;
 });
 
-function removeItem(item: TextBox | Image) {
-    const new_list: (TextBox | Image)[] = [];
+function removeItem(item: AlbumListItem) {
+    const new_list: AlbumItem[] = [];
 
-    for (const itm of album_items) {
+    for (const itm of album_items.value) {
         if (itm.id !== item.id) {
+            new_list.push(itm);
+        } else if (item.type !== albumItemType(itm)) {
             new_list.push(itm);
         }
     }
@@ -90,38 +118,61 @@ function removeItem(item: TextBox | Image) {
     emit('albumItems', new_list);
 }
 
-let dragging: ListItem|null = null;
-let draggingOrder: number|null = null;
-let dropInOrder: number|null = null;
+let dragging: ListItem | undefined;
+let draggingOrder: number | undefined;
+let dropInOrder: number | undefined;
 const sortableList = useTemplateRef('sortable');
 onMounted(() => {
-    sortableList.value.addEventListener('dragstart', (e) => {
-        const itemElm = getDragAfterElement(e.target, sortableList);
-        itemElm.classList.add('dragging');
-        const itemId = parseInt(itemElm.dataset.id);
-        dragging = itemsList.value.find((itm) => itm.id === itemId);
-        draggingOrder = dragging.order;
-    });
-    sortableList.value.addEventListener('dragend', (e) => {
-        // Clean up temp dragging vars (this is called after `drop` event, so we're done handling it)
-        const itemElm = e.target;
-        itemElm.classList.remove('dragging');
-        const elms = sortableList.value.querySelectorAll('[draggable=true]');
-
-        for (const elm of elms) {
-            elm.classList.remove('over', 'drop-right', 'drop-left');
+    sortableList.value?.addEventListener('dragstart', (e: DragEvent) => {
+        if (!(e.target instanceof HTMLElement)) {
+            return;
         }
 
-        dropInOrder = null;
-        draggingOrder = null;
-        dragging = null;
+        const itemElm = getDragAfterElement(
+            e.target,
+            sortableList.value as HTMLDivElement,
+        );
+
+        if (itemElm instanceof HTMLElement) {
+            const itemId = parseInt(itemElm.dataset.id ?? '-1');
+            dragging = itemsList.value.find((itm) => itm.id === itemId);
+
+            if (dragging) {
+                itemElm.classList.add('dragging');
+                draggingOrder = dragging.order;
+            }
+        }
     });
-    sortableList.value.addEventListener('drop', (e) => {
+    sortableList.value?.addEventListener('dragend', (e: DragEvent) => {
+        // Clean up temp dragging vars (this is called after `drop` event, so we're done handling it)
+        const itemElm = getDragAfterElement(
+            e.target as HTMLElement,
+            sortableList.value as HTMLDivElement,
+        );
+
+        if (itemElm instanceof Element) {
+            itemElm.classList.remove('dragging');
+        }
+
+        const elms = sortableList.value?.querySelectorAll('[draggable=true]');
+
+        if (elms?.length) {
+            for (const elm of elms) {
+                elm.classList.remove('over', 'drop-right', 'drop-left');
+            }
+        }
+
+        dropInOrder = undefined;
+        draggingOrder = undefined;
+        dragging = undefined;
+    });
+    sortableList.value?.addEventListener('drop', (e: DragEvent) => {
         e.preventDefault();
 
         if (
-            dropInOrder === null ||
+            dropInOrder === undefined ||
             dropInOrder === draggingOrder ||
+            draggingOrder === undefined ||
             dropInOrder === draggingOrder + 1
         ) {
             // We skip handling the drop if we're dropping in either the same order, or +1.
@@ -129,15 +180,19 @@ onMounted(() => {
             return;
         }
 
-        const list = album_items;
+        const list = album_items.value;
         const listLen = list.length;
-        const newList: (Image | TextBox)[] = [];
-        const moveItem = list.find((itm) => itm.id === dragging.id);
+        const newList: AlbumItem[] = [];
+        const moveItem = list.find((itm) => itm.id === dragging?.id);
+
+        if (moveItem === undefined) {
+            return;
+        }
 
         for (let i = 0; i < listLen; i++) {
             if (i + 1 === dropInOrder) {
                 newList.push(moveItem);
-            } else if (i + 1 === dragging.order) {
+            } else if (i + 1 === dragging?.order) {
                 continue;
             }
 
@@ -157,16 +212,35 @@ onMounted(() => {
 
         emit('albumItems', newList);
     });
-    sortableList.value.addEventListener('dragleave', () => {
-        dropInOrder = null;
-        const elms = sortableList.value.querySelectorAll('[draggable=true]');
+    sortableList.value?.addEventListener('dragleave', (e: DragEvent) => {
+        if (e.target instanceof HTMLElement) {
+            const t = getDragAfterElement(
+                e.target,
+                sortableList.value as HTMLDivElement,
+            );
 
-        for (const elm of elms) {
-            elm.classList.remove('over', 'drop-right', 'drop-left');
+            if (t instanceof Element) {
+                return;
+            }
+        }
+
+        dropInOrder = undefined;
+        const elms = sortableList.value?.querySelectorAll('[draggable=true]');
+
+        if (elms?.length) {
+            for (const elm of elms) {
+                elm.classList.remove('over', 'drop-right', 'drop-left');
+            }
         }
     });
-    sortableList.value.addEventListener('dragover', (e) => {
-        if (e.dataTransfer.types.includes('Files')) {
+    sortableList.value?.addEventListener('dragover', (e: DragEvent) => {
+        const fileItems = e.dataTransfer
+            ? [...e.dataTransfer.items].filter(
+                  (i) => i.kind === 'file' && i.type,
+              )
+            : [];
+
+        if (fileItems.length > 0 || !(e.target instanceof HTMLElement)) {
             // We only handle element reordering here, file drops not included
             return;
         }
@@ -174,21 +248,25 @@ onMounted(() => {
         e.preventDefault();
         const draggingOverItemElm = getDragAfterElement(
             e.target,
-            sortableList.value,
+            sortableList.value as HTMLDivElement,
         );
-        const elms = sortableList.value.querySelectorAll('[draggable=true]');
+        const elms = sortableList.value?.querySelectorAll('[draggable=true]');
 
-        for (const elm of elms) {
-            elm.classList.remove('over', 'drop-right', 'drop-left');
+        if (elms?.length) {
+            for (const elm of elms) {
+                elm.classList.remove('over', 'drop-right', 'drop-left');
+            }
         }
 
-        dropInOrder = null;
+        dropInOrder = undefined;
 
         if (draggingOverItemElm) {
             const targetW = e.target.clientWidth;
             const targetCenter = targetW / 3;
             const hoverX = e.offsetX;
-            const hoverOrder = parseInt(draggingOverItemElm.dataset.order);
+            const hoverOrder = parseInt(
+                draggingOverItemElm.dataset.order ?? '-1',
+            );
             const cls = ['over'];
 
             if (hoverX < targetCenter) {
@@ -205,7 +283,10 @@ onMounted(() => {
         }
     });
 });
-function getDragAfterElement(target, container) {
+function getDragAfterElement(
+    target: HTMLElement,
+    container: HTMLElement,
+): HTMLElement | null {
     if (target === document.body) {
         return null;
     }
@@ -214,11 +295,15 @@ function getDragAfterElement(target, container) {
         return null;
     }
 
-    if (target.attributes['draggable']) {
+    if (target.getAttribute('draggable')) {
         return target;
     }
 
-    return getDragAfterElement(target.parentElement, container);
+    if (target.parentElement) {
+        return getDragAfterElement(target.parentElement, container);
+    }
+
+    return null;
 }
 
 async function saveImageDescription(itm: ImageListItem) {
@@ -227,7 +312,7 @@ async function saveImageDescription(itm: ImageListItem) {
         method: path.method,
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'X-CSRFToken': csrf_token,
         },
         body: JSON.stringify(itm),
@@ -241,7 +326,7 @@ async function saveTextBox(itm: TextListItem) {
         method: path.method,
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'X-CSRFToken': csrf_token,
         },
         body: JSON.stringify(itm),
@@ -258,31 +343,35 @@ function addTextBox() {
         description: defaultText,
         col_size: 1,
     };
-    const new_list = [...album_items];
+    const new_list = [...album_items.value];
     new_list.push(itm);
     emit('albumItems', new_list);
 }
 
-const editTextId = ref(null);
+const editTextId: Ref<number | null> = ref(null);
 async function saveText(itm: ImageListItem | TextListItem) {
-    let _itm: Image|TextBox;
+    let _itm: AlbumItem;
 
-    if (itm.type === 'image') {
+    if (isImageListItem(itm)) {
         _itm = await saveImageDescription(itm);
-    } else if (itm.type === 'text') {
+    } else if (isTextListItem(itm)) {
         _itm = await saveTextBox(itm);
+    } else {
+        editTextId.value = null;
+
+        return;
     }
 
     if (_itm) {
         _itm.order = itm.order;
-        const new_items = album_items;
+        const new_items = album_items.value;
 
         for (const item of new_items) {
             if (item.id === itm.id) {
                 item.id = _itm.id;
                 item.description = _itm.description;
 
-                if (_itm.hasOwnProperty('col_size')) {
+                if (isTextBox(_itm) && isTextBox(item)) {
                     item.col_size = _itm.col_size;
                 }
 
@@ -300,7 +389,7 @@ function editText(itm: ListItem) {
     nextTick(() => {
         const txtField = document.querySelector('.edit-text-field');
 
-        if (txtField) {
+        if (txtField instanceof HTMLTextAreaElement) {
             txtField.focus();
         }
     });
@@ -308,83 +397,71 @@ function editText(itm: ListItem) {
 </script>
 
 <template>
-    <div class="row images" ref="sortable">
+    <div
+        class="images grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-6"
+        ref="sortable"
+    >
         <div
             v-for="itm of itemsList"
             :key="itm.type + itm.id"
-            class="col-lg-3 has-hover-controls col-6 mb-3"
+            class="group relative"
             draggable="true"
             :data-order="itm.order"
             :data-id="itm.id"
         >
-            <div class="hover-controls">
-                <span
-                    class="text-bg-danger clickable badge"
-                    @click="removeItem(itm)"
+            <div
+                class="hover-controls absolute top-0 right-0 hidden group-hover:block"
+            >
+                <span class="btn btn-xs btn-error" @click="removeItem(itm)"
                     >X</span
                 >
             </div>
 
-            <template v-if="itm.type === 'image'">
+            <template v-if="isImageListItem(itm)">
                 <img
                     loading="lazy"
                     :srcset="itm.srcset"
                     :sizes="itm.sizes"
                     :src="itm.src"
-                    class="image-preview"
+                    class="max-w-full"
                     :alt="itm.desc"
                     @dblclick="editText(itm)"
                 />
                 <textarea
                     v-if="editTextId === itm.id"
-                    class="form-control edit-text-field"
+                    class="edit-text-field textarea"
                     v-model="itm.description"
                     @blur="saveText(itm)"
                 ></textarea>
             </template>
-            <template v-else-if="itm.type === 'text'">
+            <template v-else-if="isTextListItem(itm)">
                 <textarea
                     v-if="editTextId === itm.id"
-                    class="form-control edit-text-field h-100"
+                    class="edit-text-field textarea h-full"
                     v-model="itm.description"
                     @blur="saveText(itm)"
                 ></textarea>
                 <pre
                     v-else
                     @dblclick="editText(itm)"
-                    class="h-100 cursor-text"
+                    class="h-full cursor-text"
                     >{{ itm.description }}</pre
                 >
             </template>
         </div>
-        <div class="col-lg-3 col-6 mb-3">
-            <div class="create-text-box clickable" @click="addTextBox">
-                <span class="plus">+</span>
+        <div class="">
+            <div
+                class="flex h-full cursor-pointer items-center justify-center border-3 border-gray-600 text-3xl select-none"
+                @click="addTextBox"
+            >
+                <span class="text-5xl">+</span>
                 Add Text
             </div>
         </div>
     </div>
 </template>
 
-<style scoped>
-.image-preview {
-    max-width: 100%;
-}
-
-.hover-controls {
-    position: absolute;
-    top: 0;
-    right: 0;
-    display: none;
-}
-
-.has-hover-controls {
-    position: relative;
-}
-.has-hover-controls:hover > .hover-controls {
-    display: block;
-}
-
+<style>
 .over::after,
 .over::before {
     content: '';
@@ -408,16 +485,8 @@ function editText(itm: ListItem) {
     background-color: rgba(0, 255, 0, 0.3);
 }
 
-.create-text-box {
-    display: flex;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-    font-size: 2em;
-    border: 5px solid rgba(0, 0, 0, 0.2);
-}
-.create-text-box > .plus {
-    font-size: 1.5em;
+.dragging {
+    filter: grayscale(1);
+    opacity: 0.4;
 }
 </style>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
-import type { Ref, ComputedRef } from 'vue';
+import type { Ref } from 'vue';
 import { computed, ref } from 'vue';
 import {
     edit as editAlbum,
@@ -28,8 +28,8 @@ const emit = defineEmits(['albumSaved', 'albumItems']);
 const categories = computed(() => {
     return page.props.categories as Category[];
 });
-const rawLocations: ComputedRef<Location[]> = computed(() => {
-    return page.props.locations;
+const rawLocations = computed(() => {
+    return page.props.locations as Location[];
 });
 
 async function doSaveAlbum(album: Album) {
@@ -257,7 +257,7 @@ async function insertIntoDescription(text: string) {
     </h2>
     <form @submit.prevent="saveAlbum" class="mb-3">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-10">
-            <fieldset class="col-span-9 fieldset my-3">
+            <fieldset class="col-span-7 xl:col-span-8 fieldset my-3">
                 <legend class="fieldset-legend">Album Title</legend>
                 <input
                     type="text"
@@ -267,7 +267,12 @@ async function insertIntoDescription(text: string) {
                     @change="changedValues"
                 />
             </fieldset>
-            <div class="col-span-3 align-content-end my-3 py-2 content-end">
+            <fieldset class="col-span-2 my-3 fieldset">
+                <legend class="fieldset-legend">Order</legend>
+                <input type="number" v-model="album.order" name="album_order"
+                    class="input w-full" @change="changedValues">
+            </fieldset>
+            <div class="col-span-3 xl:col-span-2 align-content-end my-3 py-2 content-end">
                 <label class="label">
                     <input
                         type="checkbox"

@@ -9,7 +9,7 @@ import {
     destroy,
     togglePublished as tglPub,
 } from '@/routes/admin/albums';
-import type { Album, Category } from '@/types/models';
+import type { Album } from '@/types/models';
 
 defineOptions({
     layout: {
@@ -24,9 +24,6 @@ defineOptions({
 
 const page = usePage();
 const csrf_token = page.props.csrf_token as string;
-const categories = computed(() => {
-    return page.props.categories as Category[];
-});
 const pagination = computed(() => {
     return page.props.pagination;
 });

@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import EditForm from '@/pages/admin/albums/editForm.vue';
 import { index, create } from '@/routes/admin/albums';
+import type { AlbumItem } from '@/types/models';
 
 defineOptions({
     layout: {
@@ -31,8 +32,12 @@ const album = ref({
     description: '',
     date_start: null,
     date_end: null,
-    items: []
+    items: [] as AlbumItem[],
 });
+
+function setAlbumItems(items: AlbumItem[]) {
+    album.value.items = items;
+}
 </script>
 
 <template>
@@ -42,7 +47,7 @@ const album = ref({
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
     >
         <edit-form :album="album"
-                   @album-items="(itms) => album.items = itms"
+                   @album-items="setAlbumItems"
         ></edit-form>
     </div>
 </template>

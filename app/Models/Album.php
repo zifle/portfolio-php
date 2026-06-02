@@ -24,16 +24,17 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * @property int|null $location_id
  * @property string|null $date_start
  * @property string|null $date_end
- * @property string|null $published_at
- * @property string|null $archived_at
+ * @property CarbonImmutable|null $published_at
+ * @property CarbonImmutable|null $archived_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read \App\Models\Category|null $category
+ * @property-read \App\Models\AlbumItem|null $pivot
  * @property-read Collection<int, \App\Models\Image> $images
  * @property-read int|null $images_count
  * @property-read mixed $items
  * @property-read \App\Models\Location|null $location
- * @property mixed $published
+ * @property-read mixed $published
  * @property-read Collection<int, \App\Models\TextBox> $text_boxes
  * @property-read int|null $text_boxes_count
  * @method static \Database\Factories\AlbumFactory factory($count = null, $state = [])
@@ -63,6 +64,14 @@ class Album extends Model
     /** @use HasFactory<AlbumFactory> */
     use HasFactory;
 
+    protected function casts(): array
+    {
+        return [
+            'published_at' => 'datetime',
+            'archived_at' => 'datetime',
+        ];
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
@@ -75,12 +84,16 @@ class Album extends Model
 
     public function images(): MorphToMany
     {
-        return $this->morphedByMany(Image::class, 'album_item');
+        return $this->morphedByMany(Image::class, 'album_item')
+            ->using(AlbumItem::class)
+            ->withPivot(['order']);
     }
 
     public function text_boxes(): MorphToMany
     {
-        return $this->morphedByMany(TextBox::class, 'album_item');
+        return $this->morphedByMany(TextBox::class, 'album_item')
+            ->using(AlbumItem::class)
+            ->withPivot(['order']);
     }
 
     protected static function booted(): void
@@ -114,15 +127,19 @@ class Album extends Model
         return Attribute::make(
             get: function () {
                 $images = $this->images()
-                    ->withPivot('order')
-                    ->orderBy('order')
-                    ->get();
+                    ->orderByPivot('order')
+                    ->get()
+                    ->append(['order']);
                 $texts = $this->text_boxes()
-                    ->withPivot('order')
-                    ->orderBy('order')
-                    ->get();
+                    ->orderByPivot('order')
+                    ->get()
+                    ->append(['order']);
 
-                return collect()->merge($images)->merge($texts)->sortBy('order');
+                return collect()
+                    ->merge($images)
+                    ->merge($texts)
+                    ->sortBy('order')
+                    ->values(); // Drop the keys
             }
         );
     }

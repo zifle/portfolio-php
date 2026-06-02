@@ -10,14 +10,25 @@ const emit = defineEmits(['filesUploaded', 'locations', 'dates']);
 const fileUpload = useTemplateRef('fileUpload');
 const uploading = ref(false);
 onMounted(() => {
-    fileUpload.value.addEventListener('change', (e) => {
-        const files = e.target.files;
-        uploadImages(files);
+    fileUpload.value?.addEventListener('change', (e: Event) => {
+        const files = (e.target as HTMLInputElement).files;
+
+        if (files !== null) {
+            uploadImages(files);
+        }
     });
 });
 
 const page = usePage();
 const csrf_token = page.props.csrf_token as string;
+type SingleImageUploadReturn = {
+    success: boolean;
+    cameras: Camera[];
+    lenses: Lens[];
+    images: Image[];
+    coords: [number, number][];
+    date: string;
+};
 async function doUploadImages(data: FormData) {
     const path = storeImage();
     const response = await fetch(path.url, {
@@ -29,23 +40,15 @@ async function doUploadImages(data: FormData) {
         body: data,
     });
 
-    return (await response.json()) as {
-        success: boolean;
-        cameras: Camera[];
-        lenses: Lens[];
-        images: Image[];
-        coords: [number, number];
-        date: string;
-    } | {
-        success: boolean;
-        cameras: Camera[];
-        lenses: Lens[];
-        images: Image[];
-        locations: Location[];
-        dates: string;
-    };
+    return (await response.json()) as SingleImageUploadReturn;
 }
-async function checkImageDuplicates(props) {
+
+type ImageDupeProps = {
+    filename: string;
+    date_taken: string;
+    location: null | number[];
+};
+async function checkImageDuplicates(props: ImageDupeProps[]) {
     const path = checkDuplicates();
     const response = await fetch(path.url, {
         method: path.method,
@@ -54,7 +57,7 @@ async function checkImageDuplicates(props) {
             Accept: 'application/json',
             'X-CSRFToken': csrf_token,
         },
-        body: JSON.stringify(props),
+        body: JSON.stringify({ images: props }),
     });
 
     return (await response.json()) as {
@@ -65,7 +68,7 @@ async function checkImageDuplicates(props) {
     };
 }
 
-async function uploadImages(files: File[]) {
+async function uploadImages(files: FileList | File[]) {
     uploading.value = true;
 
     try {
@@ -76,13 +79,13 @@ async function uploadImages(files: File[]) {
             emit('filesUploaded', check);
         }
 
-        if (check.hasOwnProperty('upload') && check.upload.length === 0) {
+        if (check.upload?.length === 0) {
             // All images are already on the server, no need to send them again
             return;
         }
 
-        let coords = [];
-        const dates = [];
+        let coords: [number, number][] = [];
+        const dates: string[] = [];
         const uploadsPromises = [];
 
         for (const file of files) {
@@ -90,7 +93,7 @@ async function uploadImages(files: File[]) {
                 continue;
             }
 
-            if (!check.upload.includes(file.name)) {
+            if (check.upload && !check.upload.includes(file.name)) {
                 continue;
             }
 
@@ -110,13 +113,6 @@ async function uploadImages(files: File[]) {
 
         await Promise.all(uploadsPromises);
 
-        if (coords.length > 0) {
-            const locStore = useLocationStore();
-            locStore.getNearbyLocations(coords).then((locations) => {
-                emit('locations', locations);
-            });
-        }
-
         if (dates.length > 0) {
             emit(
                 'dates',
@@ -128,7 +124,9 @@ async function uploadImages(files: File[]) {
     }
 }
 
-async function getImageDuplicationProps(files: File[]) {
+async function getImageDuplicationProps(
+    files: FileList | File[],
+): Promise<ImageDupeProps[]> {
     const promises = [];
 
     for (const file of files) {
@@ -136,117 +134,115 @@ async function getImageDuplicationProps(files: File[]) {
             continue;
         }
 
-        const prom = new Promise(async (res) => {
-            const exif = await ExifReader.load(file);
+        const prom: Promise<ImageDupeProps | null> = new Promise(
+            async (res) => {
+                const exif = await ExifReader.load(file);
 
-            let date;
+                let date;
 
-            if (exif.hasOwnProperty('DateTimeOriginal')) {
-                date = exif.DateTimeOriginal.description;
-            } else if (exif.hasOwnProperty('DateTimeDigitized')) {
-                date = exif.DateTimeDigitized.description;
-            } else if (exif.hasOwnProperty('DateTime')) {
-                date = exif.DateTime.description;
-            }
+                if (exif.hasOwnProperty('DateTimeOriginal')) {
+                    date = exif.DateTimeOriginal?.description;
+                } else if (exif.hasOwnProperty('DateTimeDigitized')) {
+                    date = exif.DateTimeDigitized?.description;
+                } else if (exif.hasOwnProperty('DateTime')) {
+                    date = exif.DateTime?.description;
+                }
 
-            if (date) {
+                if (date === undefined) {
+                    res(null);
+
+                    return;
+                }
+
                 // Fix the date format (uses : instead of - to separate y-m-d)
                 const [d, t] = date.split(' ');
                 date = d.replaceAll(':', '-') + 'T' + t;
-            }
 
-            let offset = '+0000';
+                const date_taken = new Date(date+'+0000').toISOString();
 
-            if (exif.hasOwnProperty('OffsetTimeOriginal')) {
-                offset = exif.OffsetTimeOriginal.description.replace(':', '');
-            } else if (exif.hasOwnProperty('OffsetTime')) {
-                offset = exif.OffsetTime.description.replace(':', '');
-            }
+                let location = null;
 
-            const date_taken = new Date(date + offset).toISOString();
+                if (exif.GPSLatitude && exif.GPSLongitude) {
+                    location = [
+                        parseFloat(exif.GPSLatitude.description),
+                        parseFloat(exif.GPSLongitude.description),
+                    ];
+                }
 
-            let location = null;
-
-            if (
-                exif.hasOwnProperty('GPSLatitude') &&
-                exif.hasOwnProperty('GPSLongitude')
-            ) {
-                location = [
-                    parseFloat(exif.GPSLatitude.description),
-                    parseFloat(exif.GPSLongitude.description),
-                ];
-            }
-
-            res({ filename: file.name, date_taken, location });
-        });
+                res({ filename: file.name, date_taken, location });
+            },
+        );
         promises.push(prom);
     }
 
-    return await Promise.all(promises);
+    return (await Promise.all(promises)).filter((item) => item !== null);
 }
 
 const dropZone = useTemplateRef('fileDropZone');
-function dragoverFile(e) {
-    const fileItems = [...e.dataTransfer.items].filter(
-        (i) => i.kind === 'file',
-    );
+function dragoverFile(e: DragEvent) {
+    if (e.dataTransfer) {
+        const fileItems = [...e.dataTransfer.items].filter(
+            (i) => i.kind === 'file' && i.type,
+        );
 
-    if (fileItems.length > 0) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
-        dropZone.value.classList.remove('hidden');
+        if (fileItems.length > 0) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            dropZone.value?.classList.add('flex');
+        } else {
+            dropZone.value?.classList.remove('flex');
+        }
     } else {
-        dropZone.value.classList.add('hidden');
+        dropZone.value?.classList.remove('flex');
     }
 }
-function dropFiles(e) {
-    const fileItems = [...e.dataTransfer.items].filter(
-        (i) => i.kind === 'file',
-    );
+function dropFiles(e: DragEvent) {
+    if (e.dataTransfer) {
+        const fileItems = [...e.dataTransfer.items].filter(
+            (i) => i.kind === 'file' && i.type,
+        );
 
-    if (fileItems.length > 0) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
-        uploadImages(fileItems.map((i) => i.getAsFile()));
-        dragEnd();
+        if (fileItems.length > 0) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            const files = fileItems
+                .map((i) => i.getAsFile())
+                .filter((i) => i !== null);
+            uploadImages(files);
+            dragEnd();
+        }
     }
 }
 function dragEnd() {
-    dropZone.value.classList.add('hidden');
+    dropZone.value?.classList.remove('flex');
 }
 onMounted(() => {
     document.body.addEventListener('dragover', dragoverFile);
     document.body.addEventListener('dragend', dragEnd);
-    document.body.addEventListener('dragleave', dragEnd);
-    dropZone.value.addEventListener('drop', dropFiles);
+    dropZone.value?.addEventListener('dragleave', dragEnd);
+    dropZone.value?.addEventListener('drop', dropFiles);
 });
 onUnmounted(() => {
     document.body.removeEventListener('dragover', dragoverFile);
     document.body.removeEventListener('dragend', dragEnd);
-    document.body.removeEventListener('dragleave', dragEnd);
+    dropZone.value?.removeEventListener('dragleave', dragEnd);
 });
 </script>
 
 <template>
-    <fieldset class="fieldset my-3">
+    <fieldset class="my-3 fieldset">
         <legend class="fieldset-legend">Upload Images</legend>
-        <input
-            type="file"
-            multiple
-            class="file-input"
-            ref="fileUpload"
-        />
+        <input type="file" multiple class="file-input" ref="fileUpload" />
     </fieldset>
 
-    <div v-if="uploading" class="uploading fixed">
-        Uploading images ...
-    </div>
+    <div v-if="uploading" class="uploading fixed">Uploading images ...</div>
 
-    <div class="file-dropzone flex hidden" ref="fileDropZone">+</div>
+    <div class="file-dropzone z-20" ref="fileDropZone">+</div>
 </template>
 
 <style scoped>
 .file-dropzone {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -257,6 +253,9 @@ onUnmounted(() => {
     justify-content: center;
     font-size: 20rem;
     user-select: none;
+}
+.file-dropzone.flex {
+    display: flex;
 }
 
 .uploading {

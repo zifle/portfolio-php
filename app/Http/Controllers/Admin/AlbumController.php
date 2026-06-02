@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Album;
-use App\Models\Category;
-use App\Models\Location;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +19,7 @@ class AlbumController extends Controller
             'pagination' => Album::orderBy('order')
                 ->with(['category', 'location'])
                 ->withCount('images')
-                ->paginate(20)
+                ->paginate(20),
         ]);
     }
 
@@ -53,6 +51,7 @@ class AlbumController extends Controller
     {
         $album->title = $request->title;
         $album->description = $request->description ?? '';
+        $album->order = $request->order ?? 0;
         $ds = $request->date_start;
         if ($ds) {
             $ds = Carbon::parse($ds);
@@ -61,15 +60,11 @@ class AlbumController extends Controller
         if ($de) {
             $de = Carbon::parse($de);
         }
-        $album->date_start = $ds;
-        $album->date_end = $de;
+        $album->date_start = $ds?->toDateString();
+        $album->date_end = $de?->toDateString();
         $album->published_at = $request->published ? ($album->published_at ?? now()) : null;
-        if ($request->category && $cat = Category::find($request->category)) {
-            $album->category()->associate($cat);
-        }
-        if ($request->location && $loc = Location::find($request->location)) {
-            $album->location()->associate($loc);
-        }
+        $album->category_id = $request->category_id;
+        $album->location_id = $request->location_id;
 
         $album->save();
 
@@ -77,12 +72,12 @@ class AlbumController extends Controller
             $toUpdateImages = [];
             $toUpdateTexts = [];
             foreach ($request->items as $item) {
-                /** @var array{id: int, order: int, type: string} $item */
+                /** @var array{id: int, order: int, type: 'image'|'textbox'} $item */
                 switch ($item['type']) {
                     case 'image':
                         $toUpdateImages[$item['id']] = ['order' => $item['order']];
                         break;
-                    case 'text':
+                    case 'textbox':
                         $toUpdateTexts[$item['id']] = ['order' => $item['order']];
                         break;
                 }

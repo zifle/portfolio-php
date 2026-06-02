@@ -4,7 +4,7 @@ import { computed, ref } from 'vue';
 import type { Ref } from 'vue';
 import EditForm from '@/pages/admin/albums/editForm.vue';
 import { index } from '@/routes/admin/albums';
-import type { Album } from '@/types/models';
+import type { Album, AlbumItem } from '@/types/models';
 
 defineOptions({
     layout: {
@@ -27,6 +27,9 @@ const title = computed(() => {
     return `Edit ${album.value.title}`;
 });
 
+function setAlbumItems(items: AlbumItem[]) {
+    album.value.items = items;
+}
 </script>
 
 <template>
@@ -36,7 +39,7 @@ const title = computed(() => {
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
     >
         <edit-form :album="album" @album-saved="(na) => album = na"
-                   @album-items="(itms) => album.items = itms"
+                   @album-items="setAlbumItems"
         ></edit-form>
     </div>
 </template>
