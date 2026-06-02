@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Album;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AlbumController extends Controller
 {
@@ -17,8 +18,11 @@ class AlbumController extends Controller
             return null;
         }
 
-        $album->append('items');
+        $album->append(['items', 'tags'])
+            ->load(['location']);
 
-        return $album;
+        return Inertia::render('album/Show', [
+            'album' => $album,
+        ]);
     }
 }

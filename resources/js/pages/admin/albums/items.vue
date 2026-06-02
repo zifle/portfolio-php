@@ -308,6 +308,10 @@ function getDragAfterElement(
 
 async function saveImageDescription(itm: ImageListItem) {
     const path = updateImage(itm.id);
+    const itmCopy = {
+        id: itm.id,
+        description: itm.description,
+    }
     const response = await fetch(path.url, {
         method: path.method,
         headers: {
@@ -315,7 +319,7 @@ async function saveImageDescription(itm: ImageListItem) {
             Accept: 'application/json',
             'X-CSRFToken': csrf_token,
         },
-        body: JSON.stringify(itm),
+        body: JSON.stringify(itmCopy),
     });
 
     return (await response.json()) as Image;

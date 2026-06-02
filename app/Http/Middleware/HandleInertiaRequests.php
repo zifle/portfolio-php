@@ -40,8 +40,10 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $locations = Location::all();
-        $categories = Category::orderBy('order')->get();
-        $albums = Album::with(['category', 'location']);
+        $categories = Category::orderBy('order')
+            ->withCount('albums')
+            ->get();
+        $albums = Album::query();
         if (Auth::guest()) {
             $albums->whereNotNull('published_at');
         }

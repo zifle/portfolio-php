@@ -126,20 +126,45 @@ class Album extends Model
     {
         return Attribute::make(
             get: function () {
-                $images = $this->images()
-                    ->orderByPivot('order')
-                    ->get()
-                    ->append(['order']);
-                $texts = $this->text_boxes()
-                    ->orderByPivot('order')
-                    ->get()
-                    ->append(['order']);
+                $images = $this->images->append(['order']);
+                $texts = $this->text_boxes->append(['order']);
 
                 return collect()
                     ->merge($images)
                     ->merge($texts)
                     ->sortBy('order')
                     ->values(); // Drop the keys
+            }
+        );
+    }
+
+    protected function tags(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $tags = [];
+                if ($this->category) {
+                    $tags[] = $this->category->name;
+                }
+                if ($this->location) {
+                    $tags[] = $this->location->name;
+                }
+                if ($this->date_start && $this->date_end) {
+                    if ($this->date_start == $this->date_end) {
+                        $tags[] = 'One-day';
+                    } else {
+                        $tags[] = 'Multiple days';
+                    }
+                }
+
+                $images = $this->images->load(['camera', 'lens']);
+                $images->pluck('camera')->unique()
+                    ->merge($images->pluck('lens')->unique())
+                    ->each(function(Camera | Lens $camera) use (&$tags) {
+                        $tags[] = $camera->brand.' '.$camera->model;
+                    });
+
+                return $tags;
             }
         );
     }

@@ -26,6 +26,7 @@ export type Album = {
     category?: Category;
     images?: Image[];
     items: AlbumItem[];
+    tags?: string[];
 };
 
 export type AlbumItem = Image|TextBox;

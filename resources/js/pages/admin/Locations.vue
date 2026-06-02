@@ -23,7 +23,7 @@ defineOptions({
 });
 
 const page = usePage();
-// const csrf_token = page.props.csrf_token as string;
+const csrf_token = page.props.csrf_token as string;
 const locations = computed(() => {
     return page.props.locations as Location[];
 });
