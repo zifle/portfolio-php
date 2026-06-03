@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
-import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { Head, usePage } from '@inertiajs/vue3';
+import { computed, onMounted, ref, useTemplateRef } from 'vue';
 import AlbumDescription from '@/pages/album/albumDescription.vue';
 import AlbumItems from '@/pages/album/albumItems.vue';
 import { isImage } from '@/types/models';
@@ -47,8 +47,7 @@ function setAlbumBackground() {
 
 const loading = ref(false);
 function startLoading() {
-    loadSpinner.value?.classList.remove('opacity-0');
-    loadSpinner.value?.classList.remove('hidden');
+    loadSpinner.value?.classList.remove('opacity-0', 'hidden');
     loading.value = true;
 }
 function stopLoading() {
@@ -64,6 +63,8 @@ const loadSpinner = useTemplateRef('load-spinner');
 </script>
 
 <template>
+    <Head :title="album.title"></Head>
+
     <div id="bg" class="parallax-slow">
         <div
             v-for="url in bgParallax"
@@ -93,11 +94,6 @@ const loadSpinner = useTemplateRef('load-spinner');
     z-index: 0;
     top: 0;
 
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    background-position: center;
-
     filter: blur(10px) grayscale(100%) contrast(150%);
     opacity: 0.5;
 
@@ -105,6 +101,7 @@ const loadSpinner = useTemplateRef('load-spinner');
         height: 70%;
         background-size: cover;
         background-repeat: no-repeat;
+        background-position: center 25%;
     }
 }
 

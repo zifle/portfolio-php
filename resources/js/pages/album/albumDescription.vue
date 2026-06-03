@@ -55,7 +55,7 @@ const date_end = computed(() => {
                     </span>
                 </p>
             </div>
-            <div class="px-3 md:px-10 justify-items-center" v-if="album.description">
+            <div class="py-3 md:py-7 px-3 md:px-10 justify-items-center" v-if="album.description">
                 <p class="max-w-[60rem] whitespace-pre-wrap">{{ album.description }}</p>
             </div>
             <div class="text-end my-3" v-if="album.tags">

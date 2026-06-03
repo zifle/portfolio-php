@@ -36,6 +36,10 @@ function stopLoading() {
     }
 }
 onUpdated(() => {
+    if (!loading.value) {
+        return;
+    }
+
     const imgs = images.value?.querySelectorAll('img') ?? [];
     const imgLoadPromises = [];
 
@@ -200,17 +204,12 @@ const computedItems = computed(() => {
 <style>
 
 @media screen and (min-width: 800px) {
-    body[data-bs-theme='dark'] .image-container {
-        filter: contrast(80%) brightness(80%) grayscale(30%);
-    }
-
     .image-container {
-        transition: 0.2s filter linear;
-        filter: contrast(70%) brightness(100%) grayscale(30%);
+        transition: 150ms filter linear;
     }
 
     .image-container:hover {
-        filter: contrast(100%) brightness(100%) grayscale(0%) !important;
+        filter: contrast(90%) !important;
     }
 }
 

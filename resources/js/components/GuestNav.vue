@@ -91,7 +91,7 @@ onUnmounted(() => {
                             />
                         </svg>
                     </label>
-                    <h2 class="text-4xl font-[Cedarville_Cursive] -mt-3 ps-2">
+                    <h2 class="text-4xl font-[Cedarville_Cursive] -mt-3 ps-2 select-none">
                         {{ $page.props.name }}
                     </h2>
                 </div>
@@ -120,6 +120,7 @@ onUnmounted(() => {
                         </li>
                     </ul>
                 </div>
+                <div class="navbar-end"></div>
             </div>
 
             <div class="collapse-content z-1 lg:hidden">
