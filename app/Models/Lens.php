@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Lens whereModel($value)
  * @mixin \Eloquent
  */
+#[Appends(['str'])]
 class Lens extends Model
 {
     /** @use HasFactory<\Database\Factories\LensFactory> */
@@ -33,5 +36,12 @@ class Lens extends Model
     public function images(): HasMany
     {
         return $this->hasMany(Image::class);
+    }
+
+    protected function str(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->brand.' '.$this->model
+        );
     }
 }

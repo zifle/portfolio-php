@@ -22,6 +22,7 @@ class ImageController extends Controller
         return Inertia::render('admin/Images', [
             'pagination' => Inertia::scroll(
                 fn () => Image::withCount('albums')
+                    ->with(['camera', 'lens'])
                     ->orderBy('id')
                     ->cursorPaginate(20)
             ),
@@ -197,7 +198,7 @@ class ImageController extends Controller
         ];
     }
 
-    public function delete(Image $image)
+    public function destroy(Image $image)
     {
         // Detach image from albums
         $image->albums()->detach();

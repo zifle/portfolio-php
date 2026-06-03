@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, InfiniteScroll, usePage } from '@inertiajs/vue3';
-import { Trash2 } from '@lucide/vue';
+import { Trash2, Aperture, Cone, Gauge, Camera } from '@lucide/vue';
 import { ref } from 'vue';
+import { destroy } from '@/routes/admin/images';
 import type { Image } from '@/types/models';
 
 const page = usePage();
@@ -9,10 +10,16 @@ defineProps(['pagination']);
 const csrf_token = page.props.csrf_token;
 
 async function deleteImage(id: number) {
-    // todo
+    await fetch(destroy(id).url, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': csrf_token,
+        }
+    });
+    router.reload({ only: ['pagination'] });
 }
 
-const tableBody = ref();
+const list = ref();
 </script>
 
 <template>
@@ -21,42 +28,84 @@ const tableBody = ref();
     <div
         class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4"
     >
-        <InfiniteScroll data="pagination" :items-element="() => tableBody">
-            <table class="table table-zebra">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th>ID</th>
-                        <th>Albums</th>
-                        <th>Path</th>
-                        <th>Sizes</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody ref="tableBody">
-                    <tr v-for="im in pagination.data as Image[]" :key="im.id">
-                        <th>
-                            <img :src="im.paths[Math.min(...im.available_res)]"
-                                 class="aspect-3/2 object-cover object-center max-w-30"
-                            />
-                        </th>
-                        <th>{{ im.id }}</th>
-                        <th>{{ im.albums_count ?? 'None' }}</th>
-                        <th>{{ im.path }}</th>
-                        <th>{{ im.available_res }}</th>
-                        <th>
-                            <button
-                                class="btn ms-3 btn-ghost btn-sm btn-error"
-                                @click="deleteImage(im.id)"
-                            >
-                                <trash2 class="size-6"></trash2>
-                            </button>
-                        </th>
-                    </tr>
-                </tbody>
-            </table>
+        <InfiniteScroll data="pagination" :items-element="() => list">
+            <ul class="list bg-base-100 rounded-box shadow-md" ref="list">
+                <li v-for="im in pagination.data as Image[]" :key="im.id" class="list-row">
+                    <img :src="im.paths[Math.min(...im.available_res)]" alt=""
+                         class="size-14 lg:size-20 rounded-box object-cover object-center">
+                    <div class="list-col-wrap text-center text-sm lg:text-lg opacity-40">{{ im.id }}</div>
+                    <div>
+                        <p class="text-xs opacity-60">{{ im.path }}</p>
+                        <p class="list-col-wrap text-md">{{ im.description }}</p>
+                    </div>
+                    <p class="list-col-wrap grid grid-cols-3 opacity-50">
+                        <span v-if="im.camera" class="col-span-3 text-xs">
+                            <span class="text-nowrap">
+                                <Camera class="inline size-4"></Camera>
+                                {{ im.camera.str }}
+                            </span>
+                            <span v-if="im.lens" class="text-nowrap">
+                                - {{ im.lens.str }}
+                            </span>
+                        </span>
+                        <span v-if="im.focal_length" class="text-nowrap flex-1 text-xs">
+                            <Cone class="inline size-4 rotate-180"></Cone>
+                            {{ im.focal_length }}mm
+                        </span>
+                        <span v-if="im.aperture" class="text-nowrap flex-1 text-xs">
+                            <Aperture class="inline size-4"></Aperture>
+                            f/{{ im.aperture }}
+                        </span>
+                        <span v-if="im.exposure_time" class="text-nowrap flex-1 text-xs">
+                            <Gauge class="inline size-4"></Gauge>
+                            {{ im.exposure_time }}
+                        </span>
+                    </p>
+                    <button
+                        class="btn ms-3 btn-ghost btn-sm btn-error"
+                        @click="deleteImage(im.id)"
+                    >
+                        <trash2 class="size-6"></trash2>
+                    </button>
+                </li>
+            </ul>
         </InfiniteScroll>
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+@media screen and (max-width: 768px) {
+    table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
+        display: block;
+    }
+
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    tr {
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+    }
+
+    td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+    }
+
+    td:before {
+        position: absolute;
+        left: 6px;
+        content: attr(data-label);
+        font-weight: bold;
+    }
+}
+</style>

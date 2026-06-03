@@ -34,6 +34,7 @@ export type Camera = {
     id: number;
     brand: string;
     model: string;
+    str: string;
 }
 
 export type Lens = Camera; // We reuse the properties of Camera
