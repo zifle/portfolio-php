@@ -98,7 +98,7 @@ type TextBoxItem = {
 };
 type AlbItem = ImageItem | TextBoxItem;
 
-const _items = computed(() => {
+const computedItems = computed(() => {
     const rtn: AlbItem[] = [];
     const vw = window.innerWidth;
     const cols = numCols.value;
@@ -173,37 +173,26 @@ const _items = computed(() => {
 
     return rtn.toSorted((a, b) => a.order - b.order);
 });
-const colItems = computed(() => {
-    const cols = [...Array(numCols.value)].map(() => [] as AlbItem[]);
-
-    for (const item of _items.value) {
-        cols[item.col].push(item);
-    }
-
-    return cols;
-});
 </script>
 
 <template>
-    <div class="images masonry wrapper switcher" ref="images">
-        <div v-for="(col, idx) in colItems" :key="'col_'+idx" class="flow">
-            <div v-for="item of col" :key="'itm_'+item.order" class="image-container">
-                <img
-                    v-if="item.type === 'image'"
-                    :srcset="item.srcset"
-                    :sizes="item.sizes"
-                    :src="item.src"
-                    class="image w-full opacity-0"
-                    @click="toggleGigante($event)"
-                    :alt="item.desc"
-                />
-                <p v-else-if="item.type === 'textbox'" class="text-box opacity-0">
-                    {{ item.description }}
-                </p>
-            </div>
+    <div class="columns-1 px-1 sm:px-2 gap-2 md:columns-2 lg:columns-3 xl:columns-5 *:mb-2 relative z-1" ref="images">
+        <div v-for="item of computedItems" :key="'itm_'+item.order" class="image-container">
+            <img
+                v-if="item.type === 'image'"
+                :srcset="item.srcset"
+                :sizes="item.sizes"
+                :src="item.src"
+                class="image w-full opacity-0"
+                @click="toggleGigante($event)"
+                :alt="item.desc"
+            />
+            <p v-else-if="item.type === 'textbox'" class="text-box opacity-0">
+                {{ item.description }}
+            </p>
         </div>
     </div>
-    <div id="view-container-container" class="hidden">
+    <div id="view-container-container" class="hidden z-100">
         <div id="view-container"></div>
     </div>
 </template>
@@ -225,8 +214,7 @@ const colItems = computed(() => {
     }
 }
 
-.image-container > img:not(.opacity-0),
-.loading-spinner:not(.opacity-0) {
+.image-container > img:not(.opacity-0) {
     transition: opacity 0.3s;
 }
 
@@ -234,37 +222,4 @@ const colItems = computed(() => {
     white-space: pre-wrap;
 }
 
-// CSS Masonry
-.masonry {
-    --gutter: 0.25em;
-    --flow-space: var(--gutter);
-    --switcher-target-container-width: 45rem;
-
-    img {
-        width: 100%;
-    }
-}
-
-.switcher {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--gutter, 1em);
-    align-items: var(--switcher-vertical-alignment, flex-start);
-
-    > * {
-        flex-grow: 1;
-        flex-basis: calc(
-            (var(--switcher-target-container-width, 40rem) - 100%) * 999
-        );
-    }
-}
-
-.flow > * + * {
-    margin-block-start: var(--flow-space, 1em);
-}
-
-.wrapper {
-    margin-inline: auto;
-    padding-inline: var(--gutter);
-}
 </style>

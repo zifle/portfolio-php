@@ -37,7 +37,7 @@ const date_end = computed(() => {
 </script>
 
 <template>
-    <div class="album-intro my-5">
+    <div class="album-intro my-5 relative z-1">
         <template v-if="album">
             <div class="mb-5">
                 <h2 class="text-center text-4xl">{{ album.title }}</h2>
@@ -55,10 +55,10 @@ const date_end = computed(() => {
                     </span>
                 </p>
             </div>
-            <div class="flex w-full px-5" v-if="album.description">
-                <p class="whitespace-pre-wrap">{{ album.description }}</p>
+            <div class="px-3 md:px-10 justify-items-center" v-if="album.description">
+                <p class="max-w-[60rem] whitespace-pre-wrap">{{ album.description }}</p>
             </div>
-            <div class="flex w-full justify-end my-3" v-if="album.tags">
+            <div class="text-end my-3" v-if="album.tags">
                 <span v-for="tag in album.tags" :key="tag" class="badge badge-ghost badge-sm mx-1">
                     {{ tag }}
                 </span>

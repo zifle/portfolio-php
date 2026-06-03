@@ -77,7 +77,7 @@ const loadSpinner = useTemplateRef('load-spinner');
                  @img-loaded="stopLoading"></album-items>
 
     <div
-        class="flex fixed justify-center w-full left-0 top-[25%]"
+        class="flex fixed justify-center w-full left-0 top-[25%] z-10 not-[opacity-0]:transition-opacity duration-300"
         ref="load-spinner"
     >
         <div class="loading loading-ring loading-xl"></div>
@@ -90,7 +90,8 @@ const loadSpinner = useTemplateRef('load-spinner');
     height: 100%;
     width: 100%;
     position: fixed;
-    z-index: -1;
+    z-index: 0;
+    top: 0;
 
     background-size: cover;
     background-repeat: no-repeat;
