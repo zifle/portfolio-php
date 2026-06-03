@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Head, InfiniteScroll, usePage } from '@inertiajs/vue3';
+import { Head, InfiniteScroll, usePage, router } from '@inertiajs/vue3';
 import { Trash2, Aperture, Cone, Gauge, Camera } from '@lucide/vue';
 import { ref } from 'vue';
-import { destroy } from '@/routes/admin/images';
+import { index, destroy } from '@/routes/admin/images';
 import type { Image } from '@/types/models';
 
 const page = usePage();
@@ -16,7 +16,11 @@ async function deleteImage(id: number) {
             'X-CSRFToken': csrf_token,
         }
     });
-    router.reload({ only: ['pagination'] });
+    router.visit(index(), {
+        data: { },
+        only: ["pagination"],
+        reset: ["pagination"],
+    });
 }
 
 const list = ref();
@@ -33,12 +37,24 @@ const list = ref();
                 <li v-for="im in pagination.data as Image[]" :key="im.id" class="list-row">
                     <img :src="im.paths[Math.min(...im.available_res)]" alt=""
                          class="size-14 lg:size-20 rounded-box object-cover object-center">
-                    <div class="list-col-wrap text-center text-sm lg:text-lg opacity-40">{{ im.id }}</div>
+                    <div class="list-col-wrap text-center text-sm lg:text-lg opacity-40">
+                        {{ im.id }}
+                    </div>
                     <div>
-                        <p class="text-xs opacity-60">{{ im.path }}</p>
+                        <p class="list-col-wrap text-md">
+                            <template v-if="im.albums">
+                                <span v-for="alb in im.albums" :key="`${im.id}_${alb.id}`"
+                                      class="badge badge-soft"
+                                      :class="{'badge-success': alb.published, 'badge-warning': !alb.published}"
+                                >
+                                    {{ alb.title }}
+                                </span>
+                            </template>
+                        </p>
                         <p class="list-col-wrap text-md">{{ im.description }}</p>
                     </div>
-                    <p class="list-col-wrap grid grid-cols-3 opacity-50">
+                    <div class="list-col-wrap grid grid-cols-3 opacity-50">
+                        <p class="text-xs opacity-60 col-span-3">{{ im.path }}</p>
                         <span v-if="im.camera" class="col-span-3 text-xs">
                             <span class="text-nowrap">
                                 <Camera class="inline size-4"></Camera>
@@ -60,7 +76,7 @@ const list = ref();
                             <Gauge class="inline size-4"></Gauge>
                             {{ im.exposure_time }}
                         </span>
-                    </p>
+                    </div>
                     <button
                         class="btn ms-3 btn-ghost btn-sm btn-error"
                         @click="deleteImage(im.id)"

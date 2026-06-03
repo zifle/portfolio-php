@@ -21,10 +21,9 @@ class ImageController extends Controller
     {
         return Inertia::render('admin/Images', [
             'pagination' => Inertia::scroll(
-                fn () => Image::withCount('albums')
-                    ->with(['camera', 'lens'])
-                    ->orderBy('id')
-                    ->cursorPaginate(20)
+                fn () => Image::orderBy('id')
+                    ->with(['camera', 'lens', 'albums'])
+                    ->cursorPaginate(30)
             ),
         ]);
     }

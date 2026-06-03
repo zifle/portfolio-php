@@ -119,7 +119,7 @@ type AlbItem = ImageItem | TextBoxItem;
 
 const computedItems = computed(() => {
     const rtn: AlbItem[] = [];
-    const vw = window.innerWidth;
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 2000;
     const cols = numCols.value;
     const colWidth = vw / cols;
     let col = 0;
