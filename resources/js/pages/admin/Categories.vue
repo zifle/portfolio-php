@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { Trash2, Pencil, Save } from 'lucide-vue-next';
+import { Trash2, Pencil, Save } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import {
     index,

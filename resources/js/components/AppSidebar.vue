@@ -4,10 +4,11 @@ import {
     BookImage,
     BookOpen,
     FolderGit2,
+    Images,
     LayoutGrid,
     Map,
     Network,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -25,6 +26,7 @@ import { dashboard } from '@/routes';
 import { index as adminAlbums } from '@/routes/admin/albums';
 import { index as adminCategories } from '@/routes/admin/categories';
 import { index as adminLocations } from '@/routes/admin/locations';
+import { index as adminImages } from '@/routes/admin/images';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -47,6 +49,11 @@ const mainNavItems: NavItem[] = [
         title: 'Albums',
         href: adminAlbums(),
         icon: BookImage,
+    },
+    {
+        title: 'Images',
+        href: adminImages(),
+        icon: Images,
     },
 ];
 

@@ -23,14 +23,19 @@ onMounted(() => {
     startLoading();
 });
 
-const bgParallax = ref([] as string[]);
+const bgParallax = ref([] as {src: string, srcset: string, aspect: number}[]);
 function setAlbumBackground() {
     const lastImages = [];
     const numImages = 3;
 
     for (const item of album_items.value) {
         if (isImage(item) && item.paths) {
-            lastImages.push(item.paths[item.max_width]);
+            const obj = {
+                src: item.paths[item.max_width],
+                srcset: item.srcset.join(', '),
+                aspect: item.max_width / item.max_height,
+            }
+            lastImages.push(obj);
 
             if (lastImages.length > numImages) {
                 lastImages.shift();
@@ -63,14 +68,19 @@ const loadSpinner = useTemplateRef('load-spinner');
 </script>
 
 <template>
-    <Head :title="album.title"></Head>
+    <Head :title="album.title" />
 
     <div id="bg" class="parallax-slow">
         <div
-            v-for="url in bgParallax"
-            :key="'bg_prx_' + url"
-            :style="`background-image: url('${url}')`"
-        ></div>
+            v-for="(bg, idx) in bgParallax"
+            :key="'bg_prx_' + idx"
+            class="w-full h-[70%]"
+        >
+            <img :src="bg.src" alt="" decoding="async" fetchpriority="low"
+                 :srcset="bg.srcset" loading="lazy" class="object-cover object-center h-full w-full"
+                 :style="`aspect-ratio: ${bg.aspect};`"
+            />
+        </div>
     </div>
 
     <album-description :album="album"></album-description>
@@ -96,13 +106,6 @@ const loadSpinner = useTemplateRef('load-spinner');
 
     filter: blur(10px) grayscale(100%) contrast(150%);
     opacity: 0.5;
-
-    > div {
-        height: 70%;
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center 25%;
-    }
 }
 
 @keyframes move-slow {

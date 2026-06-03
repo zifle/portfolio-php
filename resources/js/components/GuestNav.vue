@@ -103,7 +103,7 @@ onUnmounted(() => {
                         >
                             <details v-if="isCategory(item)">
                                 <summary>{{ item.name }}</summary>
-                                <ul class="z-1 w-40 bg-base-100 p-2">
+                                <ul class="z-1 w-60 bg-base-100 p-2">
                                     <li
                                         v-for="album in item.albums"
                                         :key="'alb' + album.id"
@@ -131,7 +131,7 @@ onUnmounted(() => {
                     >
                         <details v-if="isCategory(item)">
                             <summary>{{ item.name }}</summary>
-                            <ul class="z-1 w-40 bg-base-100 p-2">
+                            <ul class="z-1 w-60 bg-base-100 p-2">
                                 <li
                                     v-for="album in item.albums"
                                     :key="'col_alb' + album.id"

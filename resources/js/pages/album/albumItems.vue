@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, onUpdated, ref, useTemplateRef, watch } from 'vue';
+import {
+    computed,
+    onUpdated,
+    onMounted,
+    ref,
+    useTemplateRef,
+    watch,
+    onUnmounted,
+} from 'vue';
 import { debounce } from '@/lib/debounce';
 import { toggleGigante } from '@/lib/gigante/gigante';
 import { isImage, isTextBox } from '@/types/models';
@@ -37,7 +45,7 @@ function stopLoading() {
 }
 onUpdated(() => {
     if (!loading.value) {
-        return;
+        return stopLoading();
     }
 
     const imgs = images.value?.querySelectorAll('img') ?? [];
@@ -77,11 +85,17 @@ const getNumCols = () => {
 
     return cols;
 };
-const numCols = ref(getNumCols());
+const numCols = ref();
 const resizeDB = debounce(() => {
     numCols.value = getNumCols();
 }, 50);
-window.addEventListener('resize', resizeDB);
+onMounted(() => {
+    numCols.value = getNumCols();
+    window.addEventListener('resize', resizeDB);
+});
+onUnmounted(() => {
+    window.removeEventListener('resize', resizeDB);
+});
 
 type ImageItem = {
     order: number;
@@ -92,6 +106,7 @@ type ImageItem = {
     sizes: string;
     src: string;
     desc: string;
+    aspect: number;
 };
 type TextBoxItem = {
     order: number;
@@ -108,6 +123,8 @@ const computedItems = computed(() => {
     const cols = numCols.value;
     const colWidth = vw / cols;
     let col = 0;
+    const sizes =
+        '(max-width: 767px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 20vw';
 
     for (const item of albumItems.value) {
         const _item: { [key: string]: any } = {
@@ -115,7 +132,7 @@ const computedItems = computed(() => {
             gridSize: 1,
             col,
         };
-        let albItem: AlbItem|undefined = undefined;
+        let albItem: AlbItem | undefined = undefined;
         col += 1;
 
         if (col >= cols) {
@@ -123,23 +140,18 @@ const computedItems = computed(() => {
         }
 
         if (isImage(item)) {
-            const srcset = [];
-            let min_width = item.max_width;
+            let srcset = [];
 
-            for (const width in item.paths) {
-                if (item.paths.hasOwnProperty(width)) {
-                    const w = parseInt(width);
-
-                    if (w < min_width) {
-                        min_width = w;
+            if (item.srcset) {
+                srcset = item.srcset;
+            } else {
+                for (const width in item.paths) {
+                    if (item.paths.hasOwnProperty(width)) {
+                        srcset.push(`${item.paths[width]} ${width}w`);
                     }
-
-                    srcset.push(`${item.paths[width]} ${width}w`);
                 }
             }
 
-            // The _slot_ part of the `sizes` simply needs to know how
-            // big the image will display
             let maxImgWidth = colWidth * _item.gridSize;
 
             if (cols < _item.gridSize) {
@@ -160,9 +172,12 @@ const computedItems = computed(() => {
 
             _item.type = 'image';
             _item.srcset = srcset.join(',');
-            _item.sizes = 100 / cols + 'vw';
-            _item.src = item.paths ? item.paths[width] : '';
+            _item.sizes = sizes;
+            _item.src = item.paths[width];
+            _item.aspect = item.max_width / item.max_height;
             _item.desc = item.description || 'Photo#' + item.order;
+            _item.width = item.max_width;
+            _item.height = item.max_height;
             albItem = _item as ImageItem;
         } else if (isTextBox(item)) {
             _item.type = 'textbox';
@@ -180,8 +195,15 @@ const computedItems = computed(() => {
 </script>
 
 <template>
-    <div class="columns-1 px-1 sm:px-2 gap-2 md:columns-2 lg:columns-3 xl:columns-5 *:mb-2 relative z-1" ref="images">
-        <div v-for="item of computedItems" :key="'itm_'+item.order" class="image-container">
+    <div
+        class="relative z-1 columns-1 gap-2 px-1 *:mb-2 sm:px-2 md:columns-2 lg:columns-3 xl:columns-5"
+        ref="images"
+    >
+        <div
+            v-for="item of computedItems"
+            :key="'itm_' + item.order"
+            class="image-container"
+        >
             <img
                 v-if="item.type === 'image'"
                 :srcset="item.srcset"
@@ -190,19 +212,22 @@ const computedItems = computed(() => {
                 class="image w-full opacity-0"
                 @click="toggleGigante($event)"
                 :alt="item.desc"
+                :width="item.width"
+                :height="item.height"
+                :style="`aspect-ratio: ${item.aspect};`"
+                decoding="async"
             />
             <p v-else-if="item.type === 'textbox'" class="text-box opacity-0">
                 {{ item.description }}
             </p>
         </div>
     </div>
-    <div id="view-container-container" class="hidden z-100">
+    <div id="view-container-container" class="z-100 hidden">
         <div id="view-container"></div>
     </div>
 </template>
 
 <style>
-
 @media screen and (min-width: 800px) {
     .image-container {
         transition: 150ms filter linear;
@@ -220,5 +245,4 @@ const computedItems = computed(() => {
 .text-box {
     white-space: pre-wrap;
 }
-
 </style>

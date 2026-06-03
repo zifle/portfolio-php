@@ -21,11 +21,13 @@ export type Image = {
     created_at?: string;
     updated_at?: string;
 
-    paths?: {[key: string]: string};
+    paths: {[key: string]: string};
     albums_count?: number;
     albums?: Album[];
     order?: number;
     pivot?: AlbumItemPivot;
+
+    srcset?: string[];
 };
 
 export type Camera = {

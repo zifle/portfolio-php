@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Plus, Pencil, Trash2 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { Head, InfiniteScroll, Link, router, usePage } from '@inertiajs/vue3';
+import { Plus, Pencil, Trash2 } from '@lucide/vue';
 import {
     index,
     edit,
@@ -24,12 +23,7 @@ defineOptions({
 
 const page = usePage();
 const csrf_token = page.props.csrf_token as string;
-const pagination = computed(() => {
-    return page.props.pagination;
-});
-const albums = computed(() => {
-    return pagination.value?.data as Album[];
-});
+defineProps(['pagination']);
 
 async function togglePublished(album: Album) {
     const path = tglPub(album.id);
@@ -71,51 +65,53 @@ async function deleteAlbum(album: Album) {
     </div>
 
     <div
-        class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
+        class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4"
     >
-        <table class="table table-zebra">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Category</th>
-                    <th>Title</th>
-                    <th>Published</th>
-                    <th>Images</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="album of albums" :key="album.id">
-                    <td>{{ album.id }}</td>
-                    <td>{{ album.category?.name ?? 'None' }}</td>
-                    <td>{{ album.title }}</td>
-                    <td>
-                        <input
-                            type="checkbox"
-                            class="toggle toggle-success"
-                            v-model="album.published"
-                            @change="togglePublished(album)"
-                        />
-                    </td>
-                    <td>{{ album.images_count }}</td>
-                    <td class="text-end">
-                        <Link
-                            :href="edit(album.id)"
-                            class="btn me-3 btn-ghost btn-sm btn-info"
-                        >
-                            <pencil class="size-6"></pencil>
-                        </Link>
-                        <button
-                            :disabled="album.published"
-                            class="btn btn-ghost btn-sm btn-error"
-                            @click="deleteAlbum(album)"
-                        >
-                            <trash2 class="size-6"></trash2>
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <InfiniteScroll data="pagination">
+            <table class="table table-zebra">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Category</th>
+                        <th>Title</th>
+                        <th>Published</th>
+                        <th>Images</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="album of pagination.data as Album[]" :key="album.id">
+                        <td>{{ album.id }}</td>
+                        <td>{{ album.category?.name ?? 'None' }}</td>
+                        <td>{{ album.title }}</td>
+                        <td>
+                            <input
+                                type="checkbox"
+                                class="toggle toggle-success"
+                                v-model="album.published"
+                                @change="togglePublished(album)"
+                            />
+                        </td>
+                        <td>{{ album.images_count }}</td>
+                        <td class="text-end">
+                            <Link
+                                :href="edit(album.id)"
+                                class="btn me-3 btn-ghost btn-sm btn-info"
+                            >
+                                <pencil class="size-6"></pencil>
+                            </Link>
+                            <button
+                                :disabled="album.published"
+                                class="btn btn-ghost btn-sm btn-error"
+                                @click="deleteAlbum(album)"
+                            >
+                                <trash2 class="size-6"></trash2>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </InfiniteScroll>
     </div>
 </template>
 

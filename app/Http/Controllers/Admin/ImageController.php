@@ -13,9 +13,21 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class ImageController extends Controller
 {
+    public function index(Request $request)
+    {
+        return Inertia::render('admin/Images', [
+            'pagination' => Inertia::scroll(
+                fn () => Image::withCount('albums')
+                    ->orderBy('id')
+                    ->cursorPaginate(20)
+            ),
+        ]);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -183,5 +195,21 @@ class ImageController extends Controller
             'lenses' => $lenses->unique('id'),
             'locations' => $locations,
         ];
+    }
+
+    public function delete(Image $image)
+    {
+        // Detach image from albums
+        $image->albums()->detach();
+
+        // Delete image files
+        $disk = $image::getDisk();
+        foreach ($image->available_res as $w) {
+            $fname = str_replace('{0}', $w, $image->path);
+            $disk->delete($fname);
+        }
+
+        // Delete the model
+        $image->delete();
     }
 }

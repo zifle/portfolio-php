@@ -17,7 +17,20 @@ export function toggleGigante(ev: MouseEvent) {
                 once: true,
             });
             const iClone = i.cloneNode() as HTMLImageElement;
-            iClone.setAttribute('sizes', '100vw'); // Make sure the browser loads the proper image
+
+            let maxWidth = '100vw';
+            const imW = iClone.getAttribute('width');
+            const imH = iClone.getAttribute('height');
+
+            if (imW && imH) {
+                const aspect = imW / imH;
+
+                if (aspect < 1) {
+                    maxWidth = window.innerHeight * aspect + 'px';
+                }
+            }
+
+            iClone.setAttribute('sizes', maxWidth); // Make sure the browser loads the proper image
             iClone.classList.remove('w-100');
             viewContainer.appendChild(iClone);
             viewContTainer.classList.remove('hidden');

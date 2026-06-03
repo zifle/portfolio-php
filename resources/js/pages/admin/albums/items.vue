@@ -65,9 +65,7 @@ const itemsList = computed(() => {
             _item['type'] = 'image';
 
             if (isImageListItem(_item)) {
-                if (item.paths) {
-                    _item['src'] = item.paths[max_width];
-                }
+                _item['src'] = item.paths[max_width];
 
                 _item['srcset'] = srcset.join(',');
                 _item['sizes'] = sizes.join(',');

@@ -28,15 +28,16 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * @property CarbonImmutable|null $archived_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
- * @property-read \App\Models\Category|null $category
- * @property-read \App\Models\AlbumItem|null $pivot
- * @property-read Collection<int, \App\Models\Image> $images
+ * @property-read Category|null $category
+ * @property-read AlbumItem|null $pivot
+ * @property-read Collection<int, Image> $images
  * @property-read int|null $images_count
  * @property-read mixed $items
- * @property-read \App\Models\Location|null $location
+ * @property-read Location|null $location
  * @property-read mixed $published
- * @property-read Collection<int, \App\Models\TextBox> $text_boxes
+ * @property-read Collection<int, TextBox> $text_boxes
  * @property-read int|null $text_boxes_count
+ *
  * @method static \Database\Factories\AlbumFactory factory($count = null, $state = [])
  * @method static Builder<static>|Album isArchived()
  * @method static Builder<static>|Album isPublished()
@@ -56,6 +57,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * @method static Builder<static>|Album whereSlug($value)
  * @method static Builder<static>|Album whereTitle($value)
  * @method static Builder<static>|Album whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 #[Appends(['published'])]
@@ -126,7 +128,7 @@ class Album extends Model
     {
         return Attribute::make(
             get: function () {
-                $images = $this->images->append(['order']);
+                $images = $this->images->append(['order', 'srcset']);
                 $texts = $this->text_boxes->append(['order']);
 
                 return collect()
@@ -158,9 +160,9 @@ class Album extends Model
                 }
 
                 $images = $this->images->load(['camera', 'lens']);
-                $images->pluck('camera')->unique()
-                    ->merge($images->pluck('lens')->unique())
-                    ->each(function(Camera | Lens $camera) use (&$tags) {
+                $images->pluck('camera')->unique()->filter()
+                    ->merge($images->pluck('lens')->unique()->filter())
+                    ->each(function (Camera|Lens $camera) use (&$tags) {
                         $tags[] = $camera->brand.' '.$camera->model;
                     });
 

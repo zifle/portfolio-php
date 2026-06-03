@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Album;
+use App\Models\TextBox;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,10 +17,12 @@ class AlbumController extends Controller
     public function index()
     {
         return Inertia::render('admin/albums/Index', [
-            'pagination' => Album::orderBy('order')
-                ->with(['category', 'location'])
-                ->withCount('images')
-                ->paginate(20),
+            'pagination' => Inertia::scroll(
+                fn () => Album::orderBy('order')
+                    ->with(['category', 'location'])
+                    ->withCount('images')
+                    ->paginate(20)
+            ),
         ]);
     }
 
@@ -85,6 +88,8 @@ class AlbumController extends Controller
 
             $album->images()->sync($toUpdateImages);
             $album->text_boxes()->sync($toUpdateTexts);
+
+            TextBox::whereDoesntHave('albums')->delete();
         }
 
         $album->append('items');

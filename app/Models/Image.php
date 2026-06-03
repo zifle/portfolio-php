@@ -109,6 +109,21 @@ class Image extends Model
         );
     }
 
+    protected function srcset(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $srcset = [];
+
+                foreach ($this->paths as $w => $path) {
+                    $srcset[] = "$path {$w}w";
+                }
+
+                return $srcset;
+            }
+        );
+    }
+
     protected function order(): Attribute
     {
         return Attribute::make(
@@ -118,8 +133,8 @@ class Image extends Model
 
     public function setExif(Exif $exif): void
     {
-        $camera_brand = $exif->get('Make');
-        $camera_model = $exif->get('Model');
+        $camera_brand = Str::trim($exif->get('Make'));
+        $camera_model = Str::trim($exif->get('Model'));
         if ($camera_brand && $camera_model) {
             $this->camera()->associate(Camera::firstOrCreate([
                 'brand' => $camera_brand,
@@ -127,8 +142,8 @@ class Image extends Model
             ]));
         }
 
-        $lens_brand = $exif->get('LensMake');
-        $lens_model = $exif->get('LensModel');
+        $lens_brand = Str::trim($exif->get('LensMake'));
+        $lens_model = Str::trim($exif->get('LensModel'));
         if ($lens_brand && $lens_model) {
             $this->lens()->associate(Lens::firstOrCreate([
                 'brand' => $lens_brand,
