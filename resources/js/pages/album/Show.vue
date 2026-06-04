@@ -105,7 +105,7 @@ const loadSpinner = useTemplateRef('load-spinner');
     top: 0;
 
     filter: blur(10px) grayscale(100%) contrast(150%);
-    opacity: 0.5;
+    opacity: 0.3;
 }
 
 @keyframes move-slow {

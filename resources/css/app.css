@@ -1,5 +1,7 @@
 @import 'tailwindcss';
-@plugin 'daisyui';
+@plugin 'daisyui' {
+    themes: silk --default, dracula --prefersdark;
+}
 
 @import 'tw-animate-css';
 
@@ -172,6 +174,3 @@
     }
 }
 
-@theme {
-    --font-brand: "Cedarville Cursive", handwriting;
-}

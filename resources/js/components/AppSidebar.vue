@@ -2,8 +2,6 @@
 import { Link } from '@inertiajs/vue3';
 import {
     BookImage,
-    BookOpen,
-    FolderGit2,
     Images,
     LayoutGrid,
     Map,
@@ -25,8 +23,8 @@ import {
 import { dashboard } from '@/routes';
 import { index as adminAlbums } from '@/routes/admin/albums';
 import { index as adminCategories } from '@/routes/admin/categories';
-import { index as adminLocations } from '@/routes/admin/locations';
 import { index as adminImages } from '@/routes/admin/images';
+import { index as adminLocations } from '@/routes/admin/locations';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -58,16 +56,16 @@ const mainNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Repository',
+    //     href: 'https://github.com/laravel/vue-starter-kit',
+    //     icon: FolderGit2,
+    // },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://laravel.com/docs/starter-kits#vue',
+    //     icon: BookOpen,
+    // },
 ];
 </script>
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted } from 'vue';
+import AppLogo from '@/components/AppLogo.vue';
 import { show as showAlbum } from '@/routes/album';
 import type { Album, Category } from '@/types/models';
 
@@ -91,9 +92,7 @@ onUnmounted(() => {
                             />
                         </svg>
                     </label>
-                    <h2 class="text-4xl font-[Cedarville_Cursive] -mt-3 ps-2 select-none">
-                        {{ $page.props.name }}
-                    </h2>
+                    <AppLogo></AppLogo>
                 </div>
                 <div class="navbar-center hidden lg:flex">
                     <ul class="menu menu-horizontal px-1">

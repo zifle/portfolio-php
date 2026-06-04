@@ -15,7 +15,7 @@ class AlbumController extends Controller
     {
 
         if ($album->published_at === null && Auth::guest()) {
-            return null;
+            return redirect('/');
         }
 
         $album->append(['items', 'tags'])

@@ -44,7 +44,7 @@ const list = ref();
                         <p class="list-col-wrap text-md">
                             <template v-if="im.albums">
                                 <span v-for="alb in im.albums" :key="`${im.id}_${alb.id}`"
-                                      class="badge badge-soft"
+                                      class="badge dark:badge-soft"
                                       :class="{'badge-success': alb.published, 'badge-warning': !alb.published}"
                                 >
                                     {{ alb.title }}
