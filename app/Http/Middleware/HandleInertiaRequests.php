@@ -39,15 +39,15 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $locations = Location::all();
-        $categories = Category::orderBy('order')
-            ->withCount('albums')
-            ->get();
-        $albums = Album::query();
-        if (Auth::guest()) {
-            $albums->whereNotNull('published_at');
+        if (! Auth::guest()) {
+            $locations = Location::all();
+            $categories = Category::orderBy('order')
+                ->withCount('albums')
+                ->get();
+        } else {
+            $locations = collect();
+            $categories = collect();
         }
-        $albums = $albums->get();
 
         return [
             ...parent::share($request),
@@ -57,9 +57,57 @@ class HandleInertiaRequests extends Middleware
             ],
             'csrf_token' => csrf_token(),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'menu' => static::buildMenu(),
             'locations' => $locations,
             'categories' => $categories,
-            'albums' => $albums,
         ];
+    }
+
+    public static function buildMenu(): array
+    {
+        $categories = Category::orderBy('order')->get();
+        $albums = Album::orderBy('order');
+        if (Auth::guest()) {
+            $albums->whereNotNull('published_at');
+        }
+        $albums = $albums->get();
+
+        $cats = $categories->map(function (Category $category) {
+            return collect([
+                'id' => $category->id,
+                'name' => $category->name,
+                'order' => $category->order,
+                'albums' => collect(),
+                'albums_count' => 0,
+            ]);
+        });
+
+        $items = collect();
+        $albums->each(function (Album $album) use (&$items, $cats) {
+            $alb = collect([
+                'title' => $album->title,
+                'slug' => $album->slug,
+                'order' => $album->order,
+            ]);
+
+            if ($album->category_id) {
+                $cat = $cats->firstWhere('id', $album->category_id);
+                if ($cat) {
+                    $cat->get('albums')->add($alb);
+                    $cat->put('albums_count', $cat->get('albums_count') + 1);
+                }
+            } else {
+                $items->add($alb);
+            }
+        });
+        foreach ($cats as $cat) {
+            if (! $cat->get('albums')->isEmpty()) {
+                $items->add($cat);
+            }
+        }
+
+        return $items->sortBy('order')
+            ->values()
+            ->toArray();
     }
 }

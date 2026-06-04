@@ -6,34 +6,9 @@ import { show as showAlbum } from '@/routes/album';
 import type { Album, Category } from '@/types/models';
 
 const page = usePage();
-const categories = computed(() => {
-    return page.props.categories as Category[];
-});
-const albums = computed(() => {
-    return page.props.albums as Album[];
-});
 
 const menu = computed(() => {
-    const items: (Category | Album)[] = [];
-    const cats: { [key: number]: Category } = {};
-
-    for (const category of categories.value) {
-        if (category.albums_count) {
-            category.albums = [];
-            cats[category.id] = category;
-            items.push(cats[category.id]);
-        }
-    }
-
-    for (const album of albums.value) {
-        if (album.category_id) {
-            cats[album.category_id].albums?.push(album);
-        } else {
-            items.push(album);
-        }
-    }
-
-    return items.toSorted((a, b) => a.order - b.order);
+    return page.props.menu as (Category | Album)[];
 });
 
 function isCategory(item: Category | Album): item is Category {

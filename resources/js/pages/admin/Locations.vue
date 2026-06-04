@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { Trash2, Pencil, Save } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import {
     index,
     update,
     store,
     destroy,
 } from '@/routes/admin/locations';
-import type { Location, LocationUpdate } from '@/types/models';
+import type { LocationUpdate } from '@/types/models';
 import type { RouteDefinition } from '@/wayfinder';
 
 defineOptions({
@@ -22,11 +22,9 @@ defineOptions({
     },
 });
 
+defineProps(['locations']);
 const page = usePage();
 const csrf_token = page.props.csrf_token as string;
-const locations = computed(() => {
-    return page.props.locations as Location[];
-});
 
 const newLocation = ref({
     name: '',
@@ -212,7 +210,7 @@ function cancelEdit(loc: LocationUpdate) {
             </div>
 
             <div class="px-2">
-                <button type="submit" class="btn btn-primary">Create</button>
+                <button type="submit" class="btn btn-success">Create</button>
             </div>
         </form>
     </div>

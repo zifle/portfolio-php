@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { Trash2, Pencil, Save } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import {
     index,
     update,
     store,
     destroy,
 } from '@/routes/admin/categories';
-import type { Category, CategoryUpdate } from '@/types/models';
+import type { CategoryUpdate } from '@/types/models';
 import type { RouteDefinition } from '@/wayfinder';
 
 defineOptions({
@@ -22,11 +22,9 @@ defineOptions({
     },
 });
 
+defineProps(['categories']);
 const page = usePage();
 const csrf_token = page.props.csrf_token as string;
-const categories = computed(() => {
-    return page.props.categories as Category[];
-});
 
 const newCategory = ref({
     name: '',
@@ -212,7 +210,7 @@ function cancelEdit(cat: CategoryUpdate) {
             </div>
 
             <div class="px-2">
-                <button type="submit" class="btn btn-primary">Create</button>
+                <button type="submit" class="btn btn-success">Create</button>
             </div>
         </form>
     </div>

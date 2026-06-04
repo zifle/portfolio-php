@@ -73,6 +73,7 @@ async function deleteAlbum(album: Album) {
                     <tr>
                         <th>ID</th>
                         <th>Category</th>
+                        <th>Order</th>
                         <th>Title</th>
                         <th>Published</th>
                         <th>Images</th>
@@ -83,6 +84,7 @@ async function deleteAlbum(album: Album) {
                     <tr v-for="album of pagination.data as Album[]" :key="album.id">
                         <td>{{ album.id }}</td>
                         <td>{{ album.category?.name ?? 'None' }}</td>
+                        <td>{{ album.order }}</td>
                         <td>{{ album.title }}</td>
                         <td>
                             <input
