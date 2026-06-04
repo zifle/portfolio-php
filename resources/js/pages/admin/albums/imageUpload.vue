@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import ExifReader from 'exifreader';
-import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
+import { onMounted, onUnmounted, reactive, useTemplateRef } from 'vue';
 import { store as storeImage, checkDuplicates } from '@/routes/admin/images';
+import type { UploadPlaceholder } from '@/types';
 import type { Camera, Image, Lens, Location } from '@/types/models';
 
-const emit = defineEmits(['filesUploaded', 'locations', 'dates']);
+const emit = defineEmits([
+    'filesUploaded',
+    'locations',
+    'dates',
+    'placeholders',
+]);
 
 const fileUpload = useTemplateRef('fileUpload');
-const uploading = ref(false);
 onMounted(() => {
     fileUpload.value?.addEventListener('change', (e: Event) => {
         const files = (e.target as HTMLInputElement).files;
@@ -29,18 +34,74 @@ type SingleImageUploadReturn = {
     coords: [number, number][];
     date: string;
 };
-async function doUploadImages(data: FormData) {
-    const path = storeImage();
-    const response = await fetch(path.url, {
-        method: path.method,
-        headers: {
-            Accept: 'application/json',
-            'X-CSRFToken': csrf_token,
-        },
-        body: data,
-    });
 
-    return (await response.json()) as SingleImageUploadReturn;
+const upload = reactive({
+    uploading: false,
+    done: false,
+    totalSize: 0,
+    totalProgress: undefined,
+    fileProgress: [],
+    files: 0,
+    files_done: 0,
+} as {
+    uploading: boolean;
+    done: boolean;
+    totalSize: number;
+    totalProgress: number | undefined;
+    fileProgress: {filename: string, progress: number}[];
+    files: number;
+    files_done: number;
+});
+let uploadPlaceholders: UploadPlaceholder[] = [];
+async function doUploadImages(
+    file: File,
+    placeholder: UploadPlaceholder,
+): Promise<SingleImageUploadReturn> {
+    const data = new FormData();
+    data.append('img', file);
+    const path = storeImage();
+
+    return await new Promise((res, rej) => {
+        const xhr = new XMLHttpRequest();
+        xhr.responseType = 'json';
+
+        xhr.upload.addEventListener('progress', (e) => {
+            if (upload.totalProgress) {
+                upload.totalProgress += e.loaded;
+            } else {
+                upload.totalProgress = e.loaded;
+            }
+
+            placeholder.progress = e.loaded;
+            const fp = upload.fileProgress.find(f => f.filename === placeholder.filename);
+
+            if (fp) {
+                fp.progress = e.loaded;
+                upload.totalProgress = upload.fileProgress
+                    .map(fp => fp.progress)
+                    .reduce((ac, cv) => ac+cv, 0);
+            }
+        });
+
+        xhr.addEventListener('load', function () {
+            res(this.response as SingleImageUploadReturn);
+            const fp = upload.fileProgress.find(f => f.filename === placeholder.filename);
+
+            if (fp) {
+                fp.progress = placeholder.size;
+                upload.totalProgress = upload.fileProgress
+                    .map(fp => fp.progress)
+                    .reduce((ac, cv) => ac+cv, 0);
+            }
+        });
+
+        xhr.addEventListener('error', () => {
+            rej();
+        });
+
+        xhr.open(path.method, path.url);
+        xhr.send(data);
+    });
 }
 
 type ImageDupeProps = {
@@ -69,7 +130,14 @@ async function checkImageDuplicates(props: ImageDupeProps[]) {
 }
 
 async function uploadImages(files: FileList | File[]) {
-    uploading.value = true;
+    // Reset uploading alert
+    upload.uploading = true;
+    upload.done = false;
+    upload.totalSize = 0;
+    upload.totalProgress = undefined;
+    upload.files = upload.files_done = 0;
+    upload.fileProgress = [];
+    uploadPlaceholders = [];
 
     try {
         const props = await getImageDuplicationProps(files);
@@ -84,6 +152,8 @@ async function uploadImages(files: FileList | File[]) {
             return;
         }
 
+        upload.totalProgress = 0;
+
         let coords: [number, number][] = [];
         const dates: string[] = [];
         const uploadsPromises = [];
@@ -97,18 +167,43 @@ async function uploadImages(files: FileList | File[]) {
                 continue;
             }
 
-            const data = new FormData();
-            data.append('img', file);
-            const prom = doUploadImages(data).then((upload_data) => {
-                coords = [...coords, ...upload_data.coords];
-
-                if (upload_data.date !== null) {
-                    dates.push(upload_data.date);
-                }
-
-                emit('filesUploaded', upload_data);
+            const placeholder = reactive({
+                filename: file.name,
+                progress: 0,
+                size: file.size,
+                src: '',
+            } as UploadPlaceholder);
+            upload.totalSize += file.size;
+            upload.files += 1;
+            upload.fileProgress.push({
+                filename: placeholder.filename,
+                progress: 0,
             });
+            getImageThumbnail(file).then((b64) => (placeholder.src = b64));
+
+            const prom = doUploadImages(file, placeholder).then(
+                (upload_data) => {
+                    coords = [...coords, ...upload_data.coords];
+
+                    if (upload_data.date !== null) {
+                        dates.push(upload_data.date);
+                    }
+
+                    const plcIdx = uploadPlaceholders.findIndex(
+                        (a) => a.filename === file.name,
+                    );
+                    upload.totalSize -= uploadPlaceholders[plcIdx].size;
+                    uploadPlaceholders.splice(plcIdx,1);
+                    upload.files_done++;
+                    emit('filesUploaded', upload_data);
+                },
+            );
+            uploadPlaceholders.push(placeholder);
             uploadsPromises.push(prom);
+        }
+
+        if (uploadPlaceholders.length > 0) {
+            emit('placeholders', uploadPlaceholders);
         }
 
         await Promise.all(uploadsPromises);
@@ -120,7 +215,13 @@ async function uploadImages(files: FileList | File[]) {
             );
         }
     } finally {
-        uploading.value = false;
+        upload.done = true;
+        upload.totalProgress = upload.totalSize;
+        setTimeout(() => {
+            upload.uploading = false;
+            upload.done = false;
+            upload.files = upload.files_done = 0;
+        }, 5000);
     }
 }
 
@@ -137,6 +238,7 @@ async function getImageDuplicationProps(
         const prom: Promise<ImageDupeProps | null> = new Promise(
             async (res) => {
                 const exif = await ExifReader.load(file);
+                delete exif['MakerNote'];
 
                 let date;
 
@@ -158,7 +260,7 @@ async function getImageDuplicationProps(
                 const [d, t] = date.split(' ');
                 date = d.replaceAll(':', '-') + 'T' + t;
 
-                const date_taken = new Date(date+'+0000').toISOString();
+                const date_taken = new Date(date + '+0000').toISOString();
 
                 let location = null;
 
@@ -176,6 +278,24 @@ async function getImageDuplicationProps(
     }
 
     return (await Promise.all(promises)).filter((item) => item !== null);
+}
+
+async function getImageThumbnail(file: File): Promise<string> {
+    return new Promise(async (res) => {
+        const tags = await ExifReader.load(file);
+
+        delete tags['MakerNote'];
+
+        if (tags['Thumbnail'] && tags['Thumbnail'].image) {
+            res('data:image/jpg;base64,' + tags.Thumbnail?.base64);
+        } else {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                res(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 }
 
 const dropZone = useTemplateRef('fileDropZone');
@@ -235,7 +355,31 @@ onUnmounted(() => {
         <input type="file" multiple class="file-input" ref="fileUpload" />
     </fieldset>
 
-    <div v-if="uploading" class="uploading fixed">Uploading images ...</div>
+    <div class="toast">
+        <div
+            v-if="upload.uploading"
+            class="alert alert-vertical sm:alert-horizontal"
+            :class="{ 'alert-success': upload.done }"
+            role="alert"
+        >
+            <div>
+                <h3 class="flex justify-between font-bold">
+                    <template v-if="upload.done"> Upload completed! </template>
+                    <template v-else>
+                        <span>Uploading images ...</span>
+                        <span>
+                            {{ upload.files_done }}/{{ upload.files }} uploaded
+                        </span>
+                    </template>
+                </h3>
+                <progress
+                    class="progress w-xl"
+                    :value="upload.totalProgress"
+                    :max="upload.totalSize"
+                ></progress>
+            </div>
+        </div>
+    </div>
 
     <div class="file-dropzone z-20" ref="fileDropZone">+</div>
 </template>

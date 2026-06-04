@@ -4,6 +4,7 @@ import type { Ref } from 'vue';
 import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue';
 import { update as updateImage } from '@/routes/admin/images';
 import { store as storeText, update as updateText } from '@/routes/admin/texts';
+import type { UploadPlaceholder } from '@/types';
 import {
     albumItemType,
     isImage,
@@ -24,9 +25,12 @@ import type {
 const page = usePage();
 const csrf_token = page.props.csrf_token as string;
 
-const props = defineProps(['items']);
+const props = defineProps(['items', 'placeholders']);
 const album_items = computed(() => {
     return props.items as AlbumItem[];
+});
+const placeholders = computed(() => {
+    return props.placeholders as UploadPlaceholder[];
 });
 const emit = defineEmits(['albumItems', 'listItems']);
 
@@ -450,6 +454,13 @@ function editText(itm: ListItem) {
                     >{{ itm.description }}</pre
                 >
             </template>
+        </div>
+        <div
+            v-for="plc of placeholders"
+            :key="`plc_${plc.filename}`"
+            class="group relative opacity-40">
+            <img :src="plc.src" alt="" class="max-w-full">
+            <progress class="progress w-full" :value="plc.progress" :max="plc.size"></progress>
         </div>
         <div class="">
             <div

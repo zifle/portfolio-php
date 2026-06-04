@@ -25,6 +25,8 @@ class ImageController extends Controller
                     ->with(['camera', 'lens', 'albums'])
                     ->cursorPaginate(30)
             ),
+            'unused_count' => Image::whereDoesntHave('albums')->count(),
+            'total_count' => Image::count(),
         ]);
     }
 
@@ -211,5 +213,10 @@ class ImageController extends Controller
 
         // Delete the model
         $image->delete();
+    }
+
+    public function destroyUnused()
+    {
+        Image::whereDoesntHave('albums')->delete();
     }
 }

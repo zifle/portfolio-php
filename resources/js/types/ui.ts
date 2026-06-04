@@ -23,3 +23,10 @@ export type Pagination<T> = {
     to: number;
     data: T[];
 }
+
+export type UploadPlaceholder = {
+    filename: string;
+    src: string;
+    size: number;
+    progress: number;
+}

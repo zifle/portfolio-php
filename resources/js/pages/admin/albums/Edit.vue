@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
-import type { Ref } from 'vue';
+import { computed, reactive } from 'vue';
+import type { Reactive } from 'vue';
 import EditForm from '@/pages/admin/albums/editForm.vue';
 import { index } from '@/routes/admin/albums';
 import type { Album, AlbumItem } from '@/types/models';
@@ -22,13 +22,13 @@ defineOptions({
 });
 
 const props = defineProps(['album']);
-const album: Ref<Album> = ref(props.album);
+const album: Reactive<Album> = reactive(props.album);
 const title = computed(() => {
-    return `Edit ${album.value.title}`;
+    return `Edit ${album.title}`;
 });
 
 function setAlbumItems(items: AlbumItem[]) {
-    album.value.items = items;
+    album.items = items;
 }
 </script>
 

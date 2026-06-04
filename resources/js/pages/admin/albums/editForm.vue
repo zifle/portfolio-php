@@ -7,6 +7,7 @@ import {
     store as storeAlbum,
     update as updateAlbum,
 } from '@/routes/admin/albums';
+import type { UploadPlaceholder } from '@/types';
 import type {
     Album,
     Image,
@@ -242,6 +243,11 @@ function imageLocations(locations: Location[]) {
     setLocDistances(locations);
 }
 
+const placeholders: Ref<UploadPlaceholder[]> = ref([]);
+function setPlaceholders(plcs: UploadPlaceholder[]) {
+    placeholders.value = plcs;
+}
+
 async function insertIntoDescription(text: string) {
     // todo We want to be able to click on one of the generated tags, to insert
     //      it into the album description at the current cursor position.
@@ -386,12 +392,14 @@ async function insertIntoDescription(text: string) {
         :items="album.items"
         @album-items="(itms) => emit('albumItems', itms)"
         @list-items="setTempAlbumItems"
+        :placeholders="placeholders"
     ></items>
 
     <image-upload
         @files-uploaded="imagesUploaded"
         @dates="imageDates"
         @locations="imageLocations"
+        @placeholders="setPlaceholders"
     ></image-upload>
 </template>
 
