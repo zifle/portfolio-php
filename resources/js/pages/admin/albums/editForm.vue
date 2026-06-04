@@ -68,7 +68,10 @@ async function saveAlbum() {
             router.replace({
                 url: editAlbum(saved_album.id).url,
                 component: 'admin/albums/Edit',
-                props: (currentProps) => ({...currentProps, album: saved_album}),
+                props: (currentProps) => ({
+                    ...currentProps,
+                    album: saved_album,
+                }),
             });
         } else {
             if (saved_album) {
@@ -141,14 +144,20 @@ function setLocDistances(locations: Location[]) {
 const cameras: Ref<Camera[]> = ref([]);
 const lenses: Ref<Lens[]> = ref([]);
 const suggested_tags = computed(() => {
-    const list: string[] = [];
+    const list: Set<string> = new Set();
 
     for (const camera of cameras.value) {
-        list.push(camera.brand + ' ' + camera.model);
+        list.add(camera.brand + ' ' + camera.model);
     }
 
     for (const lens of lenses.value) {
-        list.push(lens.brand + ' ' + lens.model);
+        list.add(lens.brand + ' ' + lens.model);
+    }
+
+    if (album.tags !== undefined) {
+        for (const tag of album.tags) {
+            list.add(tag);
+        }
     }
 
     return list;
@@ -249,11 +258,16 @@ function setPlaceholders(plcs: UploadPlaceholder[]) {
 }
 
 async function insertIntoDescription(text: string) {
-    // todo We want to be able to click on one of the generated tags, to insert
-    //      it into the album description at the current cursor position.
-    document.getElementById('album-description');
-}
+    const aDescElm = document.getElementsByName(
+        'album_description',
+    )[0] as HTMLTextAreaElement;
+    const cursor = aDescElm.selectionStart;
 
+    album.description =
+        album.description.slice(0, cursor) +
+        text +
+        album.description.slice(cursor);
+}
 </script>
 
 <template>
@@ -262,8 +276,8 @@ async function insertIntoDescription(text: string) {
         <template v-else>Create new album</template>
     </h2>
     <form @submit.prevent="saveAlbum" class="mb-3">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-x-10">
-            <fieldset class="col-span-7 xl:col-span-8 fieldset my-3">
+        <div class="grid grid-cols-1 gap-x-10 lg:grid-cols-12">
+            <fieldset class="col-span-7 my-3 fieldset xl:col-span-8">
                 <legend class="fieldset-legend">Album Title</legend>
                 <input
                     type="text"
@@ -275,14 +289,21 @@ async function insertIntoDescription(text: string) {
             </fieldset>
             <fieldset class="col-span-2 my-3 fieldset">
                 <legend class="fieldset-legend">Order</legend>
-                <input type="number" v-model="album.order" name="album_order"
-                    class="input w-full" @change="changedValues">
+                <input
+                    type="number"
+                    v-model="album.order"
+                    name="album_order"
+                    class="input w-full"
+                    @change="changedValues"
+                />
             </fieldset>
-            <div class="col-span-3 xl:col-span-2 align-content-end my-3 py-2 content-end">
+            <div
+                class="align-content-end col-span-3 my-3 content-end py-2 xl:col-span-2"
+            >
                 <label class="label">
                     <input
                         type="checkbox"
-                        class="toggle toggle-success unchecked:bg-error"
+                        class="unchecked:bg-error toggle toggle-success"
                         id="album-published"
                         v-model="album.published"
                         name="album_published"
@@ -292,8 +313,8 @@ async function insertIntoDescription(text: string) {
                 </label>
             </div>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10">
-            <fieldset class="fieldset my-3">
+        <div class="grid grid-cols-1 gap-x-10 lg:grid-cols-2">
+            <fieldset class="my-3 fieldset">
                 <legend class="fieldset-legend">Start Date</legend>
                 <input
                     type="date"
@@ -303,7 +324,7 @@ async function insertIntoDescription(text: string) {
                     @change="changedValues"
                 />
             </fieldset>
-            <fieldset class="fieldset my-3">
+            <fieldset class="my-3 fieldset">
                 <legend class="fieldset-legend">End Date</legend>
                 <input
                     type="date"
@@ -314,8 +335,8 @@ async function insertIntoDescription(text: string) {
                 />
             </fieldset>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-x-10">
-            <fieldset class="fieldset my-3">
+        <div class="grid grid-cols-1 gap-x-10 lg:grid-cols-2">
+            <fieldset class="my-3 fieldset">
                 <legend class="fieldset-legend">Category</legend>
                 <select
                     v-model="album.category_id"
@@ -333,7 +354,7 @@ async function insertIntoDescription(text: string) {
                     </option>
                 </select>
             </fieldset>
-            <fieldset class="fieldset my-3">
+            <fieldset class="my-3 fieldset">
                 <legend class="fieldset-legend">Location</legend>
                 <select
                     v-model="album.location_id"
@@ -355,7 +376,7 @@ async function insertIntoDescription(text: string) {
                 </select>
             </fieldset>
         </div>
-        <fieldset class="fieldset my-3">
+        <fieldset class="my-3 fieldset">
             <legend class="fieldset-legend">Album Description</legend>
             <textarea
                 cols="30"
@@ -367,10 +388,10 @@ async function insertIntoDescription(text: string) {
             ></textarea>
             <div class="form-text">
                 <span
-                    v-for="tag in suggested_tags"
+                    v-for="tag in [...suggested_tags]"
                     :key="`tag_${tag}`"
                     @click="insertIntoDescription(tag)"
-                    class="text-bg-secondary clickable me-2 badge"
+                    class="text-bg-secondary me-2 badge cursor-pointer"
                 >
                     {{ tag }}
                 </span>

@@ -43,7 +43,7 @@ class AlbumController extends Controller
     public function edit(Album $album)
     {
         return Inertia::render('admin/albums/Edit', [
-            'album' => $album->append('items'),
+            'album' => $album->append(['items', 'tags']),
         ]);
     }
 
