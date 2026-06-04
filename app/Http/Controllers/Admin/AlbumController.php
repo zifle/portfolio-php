@@ -71,7 +71,7 @@ class AlbumController extends Controller
 
         $album->save();
 
-        if ($request->items) {
+        if (isset($request->items)) {
             $toUpdateImages = [];
             $toUpdateTexts = [];
             foreach ($request->items as $item) {
