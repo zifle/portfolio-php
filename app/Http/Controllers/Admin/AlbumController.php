@@ -21,7 +21,7 @@ class AlbumController extends Controller
                 fn () => Album::orderBy('order')
                     ->with(['category', 'location'])
                     ->withCount('images')
-                    ->paginate(20)
+                    ->paginate(40)
             ),
         ]);
     }

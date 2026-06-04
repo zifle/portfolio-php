@@ -33,7 +33,7 @@ const list = ref();
         class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4"
     >
         <InfiniteScroll data="pagination" :items-element="() => list">
-            <ul class="list bg-base-100 rounded-box shadow-md" ref="list">
+            <ul class="list bg-base-100 dark:bg-base-300 rounded-box shadow-md" ref="list">
                 <li v-for="im in pagination.data as Image[]" :key="im.id" class="list-row">
                     <img :src="im.paths[Math.min(...im.available_res)]" alt=""
                          class="size-14 lg:size-20 rounded-box object-cover object-center">
@@ -79,7 +79,7 @@ const list = ref();
                     </div>
                     <button
                         class="btn ms-3 btn-ghost btn-sm btn-error"
-                        @click="deleteImage(im.id)"
+                        @click="deleteImage(im.id)" :disabled="im.albums?.length > 0"
                     >
                         <trash2 class="size-6"></trash2>
                     </button>
