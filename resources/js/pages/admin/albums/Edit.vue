@@ -30,6 +30,10 @@ const title = computed(() => {
 function setAlbumItems(items: AlbumItem[]) {
     album.items = items;
 }
+
+function setAlbum(newAlbum: Album) {
+    Object.assign(album, newAlbum);
+}
 </script>
 
 <template>
@@ -38,7 +42,7 @@ function setAlbumItems(items: AlbumItem[]) {
     <div
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
     >
-        <edit-form :album="album" @album-saved="(na) => album = na"
+        <edit-form :album="album" @album-saved="setAlbum"
                    @album-items="setAlbumItems"
         ></edit-form>
     </div>

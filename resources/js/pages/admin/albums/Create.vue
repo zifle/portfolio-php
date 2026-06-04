@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { reactive } from 'vue';
 import EditForm from '@/pages/admin/albums/editForm.vue';
 import { index, create } from '@/routes/admin/albums';
 import type { AlbumItem } from '@/types/models';
@@ -14,15 +14,15 @@ defineOptions({
             },
             {
                 title: 'Create album',
-                href: create()
-            }
+                href: create(),
+            },
         ],
     },
 });
 
 const title = 'Create album';
 
-const album = ref({
+const album = reactive({
     id: 0,
     title: '',
     slug: '',
@@ -36,7 +36,7 @@ const album = ref({
 });
 
 function setAlbumItems(items: AlbumItem[]) {
-    album.value.items = items;
+    album.items = items;
 }
 </script>
 
@@ -46,12 +46,8 @@ function setAlbumItems(items: AlbumItem[]) {
     <div
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
     >
-        <edit-form :album="album"
-                   @album-items="setAlbumItems"
-        ></edit-form>
+        <edit-form :album="album" @album-items="setAlbumItems"></edit-form>
     </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
