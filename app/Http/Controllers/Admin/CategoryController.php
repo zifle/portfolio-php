@@ -15,7 +15,9 @@ class CategoryController extends Controller
     public function index()
     {
         return Inertia::render('admin/Categories', [
-            'categories' => Category::withCount('albums')->orderBy('order')->get()
+            'categories' => Category::withCount('albums')
+                ->orderBy('order')
+                ->get(),
         ]);
     }
 

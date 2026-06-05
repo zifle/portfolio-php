@@ -15,7 +15,8 @@ class LocationController extends Controller
     public function index()
     {
         return Inertia::render('admin/Locations', [
-            'locations' => Location::withCount('albums')->get()
+            'locations' => Location::withCount('albums')
+                ->get(),
         ]);
     }
 

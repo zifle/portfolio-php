@@ -34,13 +34,14 @@ use Illuminate\Support\Str;
  * @property numeric|null $aperture
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
- * @property-read \App\Models\AlbumItem|null $pivot
- * @property-read Collection<int, \App\Models\Album> $albums
+ * @property-read AlbumItem|null $pivot
+ * @property-read Collection<int, Album> $albums
  * @property-read int|null $albums_count
- * @property-read \App\Models\Camera|null $camera
- * @property-read \App\Models\Lens|null $lens
+ * @property-read Camera|null $camera
+ * @property-read Lens|null $lens
  * @property-read mixed $order
  * @property-read mixed $paths
+ *
  * @method static \Database\Factories\ImageFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image newQuery()
@@ -61,6 +62,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image whereMaxWidth($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image wherePath($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 #[Appends(['paths'])]

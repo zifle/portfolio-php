@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
  * @property int $album_item_id
  * @property int $order
  * @property-read mixed $type
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AlbumItem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AlbumItem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AlbumItem query()
@@ -20,6 +21,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AlbumItem whereAlbumItemId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AlbumItem whereAlbumItemType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AlbumItem whereOrder($value)
+ *
  * @mixin \Eloquent
  */
 #[Appends(['type'])]
@@ -32,6 +34,7 @@ class AlbumItem extends MorphPivot
         return Attribute::make(
             get: function () {
                 $parts = explode('\\', $this->album_item_type);
+
                 return Str::slug(array_pop($parts));
             }
         );

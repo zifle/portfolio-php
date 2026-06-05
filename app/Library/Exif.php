@@ -126,6 +126,7 @@ class Exif
 
     /**
      * Returns a latitude,longitude pair of coordinates.
+     *
      * @return float[]|null
      */
     public function gps(): ?array

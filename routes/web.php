@@ -3,8 +3,8 @@
 use App\Http\Controllers\Admin\AlbumController as AdminAlbumController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ImageController;
-use App\Http\Controllers\Admin\TextBoxController;
 use App\Http\Controllers\Admin\LocationController;
+use App\Http\Controllers\Admin\TextBoxController;
 use App\Http\Controllers\AlbumController;
 use Illuminate\Support\Facades\Route;
 

@@ -8,20 +8,18 @@ use Illuminate\Http\Request;
 
 class TextBoxController extends Controller
 {
-
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $textBox = new TextBox();
+        $textBox = new TextBox;
         $textBox->description = $request->description;
         $textBox->col_size = $request->col_size ?? 1;
         $textBox->save();
 
         return $textBox;
     }
-
 
     /**
      * Update the specified resource in storage.
@@ -34,5 +32,4 @@ class TextBoxController extends Controller
 
         return $textBox;
     }
-
 }

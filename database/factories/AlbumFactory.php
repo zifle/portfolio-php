@@ -6,7 +6,6 @@ use App\Models\Album;
 use App\Models\Category;
 use App\Models\Location;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
  * @extends Factory<Album>

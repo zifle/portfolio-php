@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Database\Factories\LensFactory;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,8 +14,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property string $brand
  * @property string $model
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Image> $images
+ * @property-read Collection<int, Image> $images
  * @property-read int|null $images_count
+ *
  * @method static \Database\Factories\LensFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Lens newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Lens newQuery()
@@ -21,12 +24,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Lens whereBrand($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Lens whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Lens whereModel($value)
+ *
  * @mixin \Eloquent
  */
 #[Appends(['str'])]
 class Lens extends Model
 {
-    /** @use HasFactory<\Database\Factories\LensFactory> */
+    /** @use HasFactory<LensFactory> */
     use HasFactory;
 
     public $timestamps = false;

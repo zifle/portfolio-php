@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\LocationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,8 +14,9 @@ use Illuminate\Support\Facades\DB;
  * @property string $name
  * @property numeric|null $lat
  * @property numeric|null $lng
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Album> $albums
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Album> $albums
  * @property-read int|null $albums_count
+ *
  * @method static \Database\Factories\LocationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Location newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Location newQuery()
@@ -23,11 +25,12 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Location whereLat($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Location whereLng($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Location whereName($value)
+ *
  * @mixin \Eloquent
  */
 class Location extends Model
 {
-    /** @use HasFactory<\Database\Factories\LocationFactory> */
+    /** @use HasFactory<LocationFactory> */
     use HasFactory;
 
     public $timestamps = false;
@@ -66,6 +69,7 @@ class Location extends Model
 
         $meanLat = array_sum($lat) / count($lat);
         $meanLng = array_sum($lng) / count($lng);
+
         return [$meanLat, $meanLng];
     }
 }

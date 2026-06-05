@@ -37,6 +37,7 @@ class AlbumController extends Controller
     public function store(Request $request)
     {
         $album = new Album;
+
         return $this->update($request, $album);
     }
 
@@ -106,6 +107,7 @@ class AlbumController extends Controller
             return response('Cannot delete a published album', 400);
         }
         $album->delete();
+
         return response('Album has been deleted', 200);
     }
 
