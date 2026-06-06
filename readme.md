@@ -38,7 +38,7 @@ The frontend is built in Vue, with Tailwind.
 
 Install the packages:
 ```shell
-$ npm install
+$ npm ci
 ```
 The build is run automatically with `composer dev`. To build for production, run;
 ```shell
