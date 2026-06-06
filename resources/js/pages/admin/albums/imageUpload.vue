@@ -48,7 +48,7 @@ const upload = reactive({
     done: boolean;
     totalSize: number;
     totalProgress: number | undefined;
-    fileProgress: {filename: string, progress: number}[];
+    fileProgress: { filename: string; progress: number }[];
     files: number;
     files_done: number;
 });
@@ -73,25 +73,29 @@ async function doUploadImages(
             }
 
             placeholder.progress = e.loaded;
-            const fp = upload.fileProgress.find(f => f.filename === placeholder.filename);
+            const fp = upload.fileProgress.find(
+                (f) => f.filename === placeholder.filename,
+            );
 
             if (fp) {
                 fp.progress = e.loaded;
                 upload.totalProgress = upload.fileProgress
-                    .map(fp => fp.progress)
-                    .reduce((ac, cv) => ac+cv, 0);
+                    .map((fp) => fp.progress)
+                    .reduce((ac, cv) => ac + cv, 0);
             }
         });
 
         xhr.addEventListener('load', function () {
             res(this.response as SingleImageUploadReturn);
-            const fp = upload.fileProgress.find(f => f.filename === placeholder.filename);
+            const fp = upload.fileProgress.find(
+                (f) => f.filename === placeholder.filename,
+            );
 
             if (fp) {
                 fp.progress = placeholder.size;
                 upload.totalProgress = upload.fileProgress
-                    .map(fp => fp.progress)
-                    .reduce((ac, cv) => ac+cv, 0);
+                    .map((fp) => fp.progress)
+                    .reduce((ac, cv) => ac + cv, 0);
             }
         });
 
@@ -100,6 +104,8 @@ async function doUploadImages(
         });
 
         xhr.open(path.method, path.url);
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.setRequestHeader('X-CSRFToken', csrf_token);
         xhr.send(data);
     });
 }
@@ -110,22 +116,31 @@ type ImageDupeProps = {
     location: null | number[];
 };
 async function checkImageDuplicates(props: ImageDupeProps[]) {
-    const path = checkDuplicates();
-    const response = await fetch(path.url, {
-        method: path.method,
-        headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            'X-CSRFToken': csrf_token,
-        },
-        body: JSON.stringify({ images: props }),
-    });
+    if (props.length > 0) {
+        const path = checkDuplicates();
+        const response = await fetch(path.url, {
+            method: path.method,
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-CSRFToken': csrf_token,
+            },
+            body: JSON.stringify({ images: props }),
+        });
 
-    return (await response.json()) as {
-        success: boolean;
-        cameras: Camera[];
-        locations?: Location[];
-        upload?: string[];
+        return (await response.json()) as {
+            success: boolean;
+            cameras: Camera[];
+            locations?: Location[];
+            upload?: string[];
+        };
+    }
+
+    return {
+        success: false,
+        cameras: [],
+        locations: [],
+        upload: [],
     };
 }
 
@@ -140,6 +155,7 @@ async function uploadImages(files: FileList | File[]) {
     uploadPlaceholders = [];
 
     try {
+        console.log(files);
         const props = await getImageDuplicationProps(files);
         const check = await checkImageDuplicates(props);
 
@@ -193,7 +209,7 @@ async function uploadImages(files: FileList | File[]) {
                         (a) => a.filename === file.name,
                     );
                     upload.totalSize -= uploadPlaceholders[plcIdx].size;
-                    uploadPlaceholders.splice(plcIdx,1);
+                    uploadPlaceholders.splice(plcIdx, 1);
                     upload.files_done++;
                     emit('filesUploaded', upload_data);
                 },
@@ -240,7 +256,7 @@ async function getImageDuplicationProps(
                 const exif = await ExifReader.load(file);
                 delete exif['MakerNote'];
 
-                let date;
+                let date: string|Date|undefined;
 
                 if (exif.hasOwnProperty('DateTimeOriginal')) {
                     date = exif.DateTimeOriginal?.description;
@@ -248,6 +264,9 @@ async function getImageDuplicationProps(
                     date = exif.DateTimeDigitized?.description;
                 } else if (exif.hasOwnProperty('DateTime')) {
                     date = exif.DateTime?.description;
+                } else {
+                    // Fallback to the file modified date
+                    date = new Date(file.lastModified);
                 }
 
                 if (date === undefined) {
@@ -256,11 +275,14 @@ async function getImageDuplicationProps(
                     return;
                 }
 
-                // Fix the date format (uses : instead of - to separate y-m-d)
-                const [d, t] = date.split(' ');
-                date = d.replaceAll(':', '-') + 'T' + t;
+                if (typeof date === 'string') {
+                    // Fix the date format (uses : instead of - to separate y-m-d)
+                    const [d, t] = date.split(' ');
+                    date = d.replaceAll(':', '-') + 'T' + t;
+                    date = new Date(date + '+0000');
+                }
 
-                const date_taken = new Date(date + '+0000').toISOString();
+                const date_taken = date.toISOString();
 
                 let location = null;
 

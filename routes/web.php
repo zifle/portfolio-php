@@ -8,7 +8,7 @@ use App\Http\Controllers\Admin\TextBoxController;
 use App\Http\Controllers\AlbumController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'Welcome')->name('home');
+Route::get('/', [AlbumController::class, 'welcome'])->name('home');
 
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');

@@ -153,8 +153,6 @@ class Image extends Model
             ]));
         }
 
-        $this->date_taken = $exif->dateTaken();
-
         $this->focal_length = $exif->getFloat('FocalLength');
         $this->focal_length_35 = $exif->getFloat('FocalLengthIn35mmFilm');
         $this->aperture = $exif->getFloat('FNumber');

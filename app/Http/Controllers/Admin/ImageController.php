@@ -6,11 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Library\Exif;
 use App\Models\Image;
 use App\Models\Location;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -56,15 +56,16 @@ class ImageController extends Controller
         $exif = new Exif($file);
 
         $filename = $file->getClientOriginalName();
-        $dateTaken = $exif->dateTaken();
+        $dateTaken = $exif->dateTaken() ?? now();
         $path = Image::getImagePath($filename);
         $image = Image::whereLike('path', '%'.$path)
             ->where('date_taken', $dateTaken)
             ->firstOrNew();
         if (! $image->exists) {
             $image->path = $path;
+            $image->date_taken = $dateTaken;
             $image->setExif($exif);
-            $res = $this->resizeUploadedImage($file, $path, $exif->get('Orientation'));
+            $res = $this->resizeUploadedImage($file, $path, $exif->get('Orientation', 1));
 
             $image->available_res = $res['available_sizes'];
             $image->max_width = $res['max_width'];
@@ -120,8 +121,13 @@ class ImageController extends Controller
         $quality = intval($qualities[0]);
         $org_width = imagesx($gd);
         $org_height = imagesy($gd);
+
         foreach ($widths as $i => $width) {
             $width = intval($width);
+
+            if ($width >= $org_width) {
+                $width = $org_width; // Never scale up images
+            }
             $ratio = $width / $org_width;
             $dst_h = floor($ratio * $org_height);
             $im = imagecreatetruecolor($width, $dst_h);
@@ -144,6 +150,10 @@ class ImageController extends Controller
                     $return['max_height'] = $height;
                 }
             }
+
+            if ($width >= $org_width) {
+                break; // Never scale up images
+            }
         }
 
         return $return;
@@ -164,6 +174,16 @@ class ImageController extends Controller
 
     public function checkDuplicates(Request $request)
     {
+        if (empty($request->input('images'))) {
+            return [
+                'images' => [],
+                'upload' => [],
+                'cameras' => [],
+                'lenses' => [],
+                'locations' => [],
+            ];
+        }
+
         $toUpload = [];
         $locs = [];
         $query = Image::with(['camera', 'lens']);

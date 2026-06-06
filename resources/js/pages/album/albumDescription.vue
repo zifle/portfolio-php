@@ -34,6 +34,17 @@ const date_end = computed(() => {
 
     return de;
 });
+
+const albumDescription = computed(() => {
+    let desc = album.value.description;
+
+    // Replace md links
+    desc = desc.replaceAll(/\[([^\]]+)]\(([^)]+)\)/ig, (substring, name, href) => {
+        return `<a href="${href}" class="link">${name}</a>`;
+    });
+
+    return desc;
+})
 </script>
 
 <template>
@@ -56,7 +67,7 @@ const date_end = computed(() => {
                 </p>
             </div>
             <div class="py-3 md:py-7 px-3 md:px-10 justify-items-center" v-if="album.description">
-                <p class="max-w-[60rem] whitespace-pre-wrap">{{ album.description }}</p>
+                <p class="max-w-[60rem] whitespace-pre-wrap" v-html="albumDescription"></p>
             </div>
             <div class="text-end my-3" v-if="album.tags">
                 <span v-for="tag in album.tags" :key="tag" class="badge badge-ghost badge-sm mx-1">

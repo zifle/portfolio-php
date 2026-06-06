@@ -67,7 +67,9 @@ onUnmounted(() => {
                             />
                         </svg>
                     </label>
-                    <AppLogo></AppLogo>
+                    <a href="/" class="-mt-3">
+                        <AppLogo></AppLogo>
+                    </a>
                 </div>
                 <div class="navbar-center hidden lg:flex">
                     <ul class="menu menu-horizontal px-1">

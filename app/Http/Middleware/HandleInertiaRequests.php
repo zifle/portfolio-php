@@ -65,7 +65,9 @@ class HandleInertiaRequests extends Middleware
 
     public static function buildMenu(): array
     {
-        $categories = Category::orderBy('order')->get();
+        $categories = Category::orderBy('order')
+            ->whereNot('name', 'Welcome') // Never show "Welcome" category
+            ->get();
         $albums = Album::orderBy('order');
         if (Auth::guest()) {
             $albums->whereNotNull('published_at');

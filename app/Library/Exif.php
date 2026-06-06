@@ -59,7 +59,7 @@ class Exif
         return static::TAGS[$section][$tag] ?? $name;
     }
 
-    public function get($name): mixed
+    public function get($name, $default = null): mixed
     {
         foreach ($this->exif as $items) {
             if (isset($items[$name])) {
@@ -67,7 +67,7 @@ class Exif
             }
         }
 
-        return null;
+        return $default;
     }
 
     /**
