@@ -19,14 +19,26 @@ class ImageController extends Controller
 {
     public function index(Request $request)
     {
+        $query = Image::orderBy('id')
+            ->with(['camera', 'lens', 'albums']);
+
+        if ($request->has('filter')) {
+            $filter = $request->input('filter');
+
+            if ($filter['used'] === 'false') {
+                $query->whereDoesntHave('albums');
+            } elseif ($filter['used'] === 'true') {
+                $query->whereHas('albums');
+            }
+        }
+
         return Inertia::render('admin/Images', [
             'pagination' => Inertia::scroll(
-                fn () => Image::orderBy('id')
-                    ->with(['camera', 'lens', 'albums'])
-                    ->cursorPaginate(30)
+                fn () => $query->cursorPaginate(30)
             ),
             'unused_count' => Image::whereDoesntHave('albums')->count(),
             'total_count' => Image::count(),
+            'filter' => $request->input('filter') ?? ['used' => null],
         ]);
     }
 
