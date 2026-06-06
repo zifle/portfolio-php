@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Auth;
 use Database\Factories\LocationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -71,5 +72,16 @@ class Location extends Model
         $meanLng = array_sum($lng) / count($lng);
 
         return [$meanLat, $meanLng];
+    }
+
+    public function toArray(): array
+    {
+        $arr = parent::toArray();
+
+        if (Auth::guest()) {
+            unset($arr['id']);
+        }
+
+        return $arr;
     }
 }

@@ -255,7 +255,7 @@ async function getImageDuplicationProps(
                 const exif = await ExifReader.load(file);
                 delete exif['MakerNote'];
 
-                let date: string|Date|undefined;
+                let date: string | Date | undefined;
 
                 if (exif.hasOwnProperty('DateTimeOriginal')) {
                     date = exif.DateTimeOriginal?.description;

@@ -1,4 +1,4 @@
-import "./gigante.css";
+import './gigante.css';
 
 let viewContainer: HTMLElement;
 export function toggleGigante(ev: MouseEvent) {
@@ -19,8 +19,8 @@ export function toggleGigante(ev: MouseEvent) {
             const iClone = i.cloneNode() as HTMLImageElement;
 
             let maxWidth = '100vw';
-            const imW = iClone.getAttribute('width');
-            const imH = iClone.getAttribute('height');
+            const imW = parseInt(iClone.getAttribute('width') ?? '3');
+            const imH = parseInt(iClone.getAttribute('height') ?? '2');
 
             if (imW && imH) {
                 const aspect = imW / imH;

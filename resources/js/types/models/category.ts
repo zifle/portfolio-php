@@ -13,4 +13,4 @@ export type CategoryUpdate = Category & {
     saving: boolean;
     edit: boolean;
     _edit: CategoryUpdate;
-}
+};

@@ -107,6 +107,8 @@ type ImageItem = {
     src: string;
     desc: string;
     aspect: number;
+    width: number;
+    height: number;
 };
 type TextBoxItem = {
     order: number;

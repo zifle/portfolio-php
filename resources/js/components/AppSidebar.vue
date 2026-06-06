@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import {
-    BookImage,
-    Images,
-    LayoutGrid,
-    Map,
-    Network,
-} from '@lucide/vue';
+import { BookImage, Images, LayoutGrid, Map, Network } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';

@@ -17,12 +17,17 @@ defineOptions({
 });
 
 const page = usePage();
-const props = defineProps(['pagination', 'unused_count', 'total_count', 'filter']);
+const props = defineProps([
+    'pagination',
+    'unused_count',
+    'total_count',
+    'filter',
+]);
 const csrf_token = page.props.csrf_token as string;
 
 type ImagesFilter = {
-    used?: null|string;
-}
+    used?: null | string;
+};
 const filter = computed(() => {
     return props.filter as ImagesFilter;
 });
@@ -58,7 +63,6 @@ async function deleteUnused() {
 const list = ref();
 
 function updateFilter(filter: ImagesFilter) {
-
     router.visit(index(), {
         data: { filter },
         only: ['pagination', 'filter'],

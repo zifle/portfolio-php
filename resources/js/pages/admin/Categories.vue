@@ -2,12 +2,7 @@
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { Trash2, Pencil, Save } from '@lucide/vue';
 import { ref } from 'vue';
-import {
-    index,
-    update,
-    store,
-    destroy,
-} from '@/routes/admin/categories';
+import { index, update, store, destroy } from '@/routes/admin/categories';
 import type { CategoryUpdate } from '@/types/models';
 import type { RouteDefinition } from '@/wayfinder';
 
@@ -50,8 +45,9 @@ async function saveCategory(cat: CategoryUpdate) {
         catCopy = cat._edit;
     }
 
-    const path: RouteDefinition<'post' | 'put'>
-        = cat.id ? update(cat.id) : store();
+    const path: RouteDefinition<'post' | 'put'> = cat.id
+        ? update(cat.id)
+        : store();
 
     const body = {
         id: cat.id,
@@ -62,7 +58,7 @@ async function saveCategory(cat: CategoryUpdate) {
         method: path.method,
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'X-CSRFToken': csrf_token,
         },
         body: JSON.stringify(body),
@@ -77,8 +73,8 @@ async function deleteCategory(id: number) {
         method: 'DELETE',
         headers: {
             'X-CSRFToken': csrf_token,
-        }
-    })
+        },
+    });
     router.reload({ only: ['categories'] });
 }
 

@@ -16,7 +16,7 @@ defineOptions({
             {
                 title: 'Edit album',
                 // href: edit(page.props.album.id)
-            }
+            },
         ],
     },
 });
@@ -42,12 +42,12 @@ function setAlbum(newAlbum: Album) {
     <div
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
     >
-        <edit-form :album="album" @album-saved="setAlbum"
-                   @album-items="setAlbumItems"
+        <edit-form
+            :album="album"
+            @album-saved="setAlbum"
+            @album-items="setAlbumItems"
         ></edit-form>
     </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

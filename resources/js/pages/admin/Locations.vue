@@ -2,12 +2,7 @@
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { Trash2, Pencil, Save } from '@lucide/vue';
 import { ref } from 'vue';
-import {
-    index,
-    update,
-    store,
-    destroy,
-} from '@/routes/admin/locations';
+import { index, update, store, destroy } from '@/routes/admin/locations';
 import type { LocationUpdate } from '@/types/models';
 import type { RouteDefinition } from '@/wayfinder';
 
@@ -56,8 +51,9 @@ async function saveLocation(loc: LocationUpdate) {
             .map((c) => parseFloat(c) || null);
     }
 
-    const path: RouteDefinition<'post' | 'put'>
-        = loc.id ? update(loc.id) : store();
+    const path: RouteDefinition<'post' | 'put'> = loc.id
+        ? update(loc.id)
+        : store();
 
     const body = {
         id: loc.id,
@@ -69,7 +65,7 @@ async function saveLocation(loc: LocationUpdate) {
         method: path.method,
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'X-CSRFToken': csrf_token,
         },
         body: JSON.stringify(body),
@@ -84,8 +80,8 @@ async function deleteLocation(id: number) {
         method: 'DELETE',
         headers: {
             'X-CSRFToken': csrf_token,
-        }
-    })
+        },
+    });
     router.reload({ only: ['locations'] });
 }
 
@@ -106,7 +102,6 @@ function cancelEdit(loc: LocationUpdate) {
     <div
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
     >
-
         <table class="table table-zebra">
             <thead>
                 <tr>
@@ -153,7 +148,7 @@ function cancelEdit(loc: LocationUpdate) {
                     <td class="text-end">
                         <button
                             v-if="!loc.edit"
-                            class="btn btn-sm btn-ghost btn-info"
+                            class="btn btn-ghost btn-sm btn-info"
                             @click="editLocation(loc)"
                         >
                             <pencil class="size-6"></pencil>
@@ -167,7 +162,7 @@ function cancelEdit(loc: LocationUpdate) {
                             <save class="size-6"></save>
                         </button>
                         <button
-                            class="btn btn-sm btn-ghost btn-error ms-3"
+                            class="btn ms-3 btn-ghost btn-sm btn-error"
                             @click="deleteLocation(loc.id)"
                         >
                             <trash2 class="size-6"></trash2>
@@ -177,13 +172,17 @@ function cancelEdit(loc: LocationUpdate) {
             </tbody>
         </table>
 
-        <div class="divider divider-start mt-10">Create new Location</div>
+        <div class="divider mt-10 divider-start">Create new Location</div>
         <form
             @submit.prevent="saveNewLocation()"
-            class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end"
+            class="grid grid-cols-1 items-end gap-3 md:grid-cols-3"
         >
             <div class="px-2">
-                <label for="new-loc-name" class="block text-sm/6 font-medium text-white">Location name</label>
+                <label
+                    for="new-loc-name"
+                    class="block text-sm/6 font-medium text-white"
+                    >Location name</label
+                >
                 <div class="mt-2">
                     <input
                         type="text"
@@ -196,7 +195,11 @@ function cancelEdit(loc: LocationUpdate) {
             </div>
 
             <div class="px-2">
-                <label for="new-loc-lat" class="block text-sm/6 font-medium text-white">Coordinates (latitude,longitude)</label>
+                <label
+                    for="new-loc-lat"
+                    class="block text-sm/6 font-medium text-white"
+                    >Coordinates (latitude,longitude)</label
+                >
                 <div class="mt-2">
                     <input
                         type="text"
@@ -206,7 +209,6 @@ function cancelEdit(loc: LocationUpdate) {
                         placeholder="40.7505, -73.9934"
                     />
                 </div>
-
             </div>
 
             <div class="px-2">

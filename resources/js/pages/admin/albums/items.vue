@@ -313,7 +313,7 @@ async function saveImageDescription(itm: ImageListItem) {
     const itmCopy = {
         id: itm.id,
         description: itm.description,
-    }
+    };
     const response = await fetch(path.url, {
         method: path.method,
         headers: {
@@ -458,9 +458,14 @@ function editText(itm: ListItem) {
         <div
             v-for="plc of placeholders"
             :key="`plc_${plc.filename}`"
-            class="group relative opacity-40">
-            <img :src="plc.src" alt="" class="max-w-full">
-            <progress class="progress w-full" :value="plc.progress" :max="plc.size"></progress>
+            class="group relative opacity-40"
+        >
+            <img :src="plc.src" alt="" class="max-w-full" />
+            <progress
+                class="progress w-full"
+                :value="plc.progress"
+                :max="plc.size"
+            ></progress>
         </div>
         <div class="">
             <div

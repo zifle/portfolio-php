@@ -23,7 +23,7 @@ onMounted(() => {
     startLoading();
 });
 
-const bgParallax = ref([] as {src: string, srcset: string, aspect: number}[]);
+const bgParallax = ref([] as { src: string; srcset: string; aspect: number }[]);
 function setAlbumBackground() {
     const lastImages = [];
     const numImages = 3;
@@ -32,9 +32,9 @@ function setAlbumBackground() {
         if (isImage(item) && item.paths) {
             const obj = {
                 src: item.paths[item.max_width],
-                srcset: item.srcset.join(', '),
+                srcset: item.srcset?.join(', ') ?? '',
                 aspect: item.max_width / item.max_height,
-            }
+            };
             lastImages.push(obj);
 
             if (lastImages.length > numImages) {
@@ -74,24 +74,33 @@ const loadSpinner = useTemplateRef('load-spinner');
         <div
             v-for="(bg, idx) in bgParallax"
             :key="'bg_prx_' + idx"
-            class="w-full h-[70%]"
+            class="h-[70%] w-full"
         >
-            <img :src="bg.src" alt="" decoding="async" fetchpriority="low"
-                 :srcset="bg.srcset" loading="lazy" class="object-cover object-center h-full w-full"
-                 :style="`aspect-ratio: ${bg.aspect};`"
+            <img
+                :src="bg.src"
+                alt=""
+                decoding="async"
+                fetchpriority="low"
+                :srcset="bg.srcset"
+                loading="lazy"
+                class="h-full w-full object-cover object-center"
+                :style="`aspect-ratio: ${bg.aspect};`"
             />
         </div>
     </div>
 
     <album-description :album="album"></album-description>
-    <album-items :loading="loading" :items="album_items"
-                 @img-loaded="stopLoading"></album-items>
+    <album-items
+        :loading="loading"
+        :items="album_items"
+        @img-loaded="stopLoading"
+    ></album-items>
 
     <div
-        class="flex fixed justify-center w-full left-0 top-[25%] z-10 not-[opacity-0]:transition-opacity duration-300"
+        class="fixed top-[25%] left-0 z-10 flex w-full justify-center duration-300 not-[opacity-0]:transition-opacity"
         ref="load-spinner"
     >
-        <div class="loading loading-ring loading-xl"></div>
+        <div class="loading loading-xl loading-ring"></div>
     </div>
     <div class="my-5"></div>
 </template>
@@ -109,7 +118,9 @@ const loadSpinner = useTemplateRef('load-spinner');
 }
 
 @keyframes move-slow {
-    to { transform: translateY(calc(-100% + 60vh)); }
+    to {
+        transform: translateY(calc(-100% + 60vh));
+    }
 }
 
 .parallax-slow {

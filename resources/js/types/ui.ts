@@ -16,17 +16,17 @@ export type Pagination<T> = {
     current_page_url: string;
     first_page_url: string;
     last_page_url: string;
-    next_page_url: string|null;
-    previous_page_url: string|null;
+    next_page_url: string | null;
+    previous_page_url: string | null;
     path: string;
     from: number;
     to: number;
     data: T[];
-}
+};
 
 export type UploadPlaceholder = {
     filename: string;
     src: string;
     size: number;
     progress: number;
-}
+};

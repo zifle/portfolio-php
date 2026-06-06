@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Library\Exif;
+use Auth;
 use Carbon\CarbonImmutable;
 use Database\Factories\ImageFactory;
 use Illuminate\Contracts\Filesystem\Filesystem;
@@ -185,5 +186,30 @@ class Image extends Model
     public static function getDisk(): Filesystem|LocalFilesystemAdapter
     {
         return Storage::disk(config('portfolio.uploads_disk'));
+    }
+
+    public function toArray(): array
+    {
+        $arr = parent::toArray();
+
+        if (Auth::guest()) {
+            unset($arr['id']);
+            unset($arr['path']);
+            unset($arr['date_taken']);
+            unset($arr['available_res']);
+            unset($arr['camera_id']);
+            unset($arr['camera']);
+            unset($arr['lens_id']);
+            unset($arr['lens']);
+            unset($arr['focal_length']);
+            unset($arr['focal_length_35']);
+            unset($arr['exposure_time']);
+            unset($arr['exposure_compensation']);
+            unset($arr['aperture']);
+            unset($arr['created_at']);
+            unset($arr['updated_at']);
+        }
+
+        return $arr;
     }
 }

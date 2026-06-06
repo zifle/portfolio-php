@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Auth;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
@@ -38,5 +39,19 @@ class AlbumItem extends MorphPivot
                 return Str::slug(array_pop($parts));
             }
         );
+    }
+
+    public function toArray(): array
+    {
+        $arr = parent::toArray();
+
+        if (Auth::guest()) {
+            unset($arr['album_item_type']);
+            unset($arr['album_item_id']);
+            unset($arr['order']);
+            unset($arr['album_id']);
+        }
+
+        return $arr;
     }
 }

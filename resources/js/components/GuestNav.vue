@@ -14,17 +14,17 @@ const menu = computed(() => {
 
 const socials = computed(() => {
     return page.props.socials as {
-        facebook: string|null,
-        instagram: string|null,
-    }
-})
+        facebook: string | null;
+        instagram: string | null;
+    };
+});
 
 function isCategory(item: Category | Album): item is Category {
     return item.hasOwnProperty('name') && item.hasOwnProperty('albums_count');
 }
 
 function closeDetailsMenu(ev: MouseEvent) {
-    let target: Element|null = ev.target as Element;
+    let target: Element | null = ev.target as Element;
     let clickedOn = null;
 
     while (target && target?.tagName != 'DETAILS') {
@@ -37,7 +37,7 @@ function closeDetailsMenu(ev: MouseEvent) {
 
     [...document.getElementsByTagName('details')]
         .filter((el: HTMLDetailsElement) => el.open && el != clickedOn)
-        .forEach((el: HTMLDetailsElement) => el.open = false);
+        .forEach((el: HTMLDetailsElement) => (el.open = false));
 }
 onMounted(() => {
     document.addEventListener('click', closeDetailsMenu);
@@ -83,14 +83,18 @@ onUnmounted(() => {
                     <ul class="menu menu-horizontal px-1">
                         <li
                             v-for="item in menu"
-                            :key="(isCategory(item) ? 'cat' : 'alb') + item.id"
+                            :key="
+                                isCategory(item)
+                                    ? 'cat_' + item.name
+                                    : 'alb_' + item.slug
+                            "
                         >
                             <details v-if="isCategory(item)">
                                 <summary>{{ item.name }}</summary>
                                 <ul class="z-1 w-60 bg-base-100 p-2">
                                     <li
                                         v-for="album in item.albums"
-                                        :key="'alb' + album.id"
+                                        :key="'alb-' + album.slug"
                                     >
                                         <Link :href="showAlbum(album.slug)">
                                             {{ album.title }}
@@ -118,14 +122,18 @@ onUnmounted(() => {
                 <ul class="menu">
                     <li
                         v-for="item in menu"
-                        :key="(isCategory(item) ? 'col_cat' : 'col_alb') + item.id"
+                        :key="
+                            isCategory(item)
+                                ? 'col_cat_' + item.name
+                                : 'col_alb_' + item.slug
+                        "
                     >
                         <details v-if="isCategory(item)">
                             <summary>{{ item.name }}</summary>
                             <ul class="z-1 w-60 bg-base-100 p-2">
                                 <li
                                     v-for="album in item.albums"
-                                    :key="'col_alb' + album.id"
+                                    :key="'col_alb-' + album.slug"
                                 >
                                     <Link :href="showAlbum(album.slug)">
                                         {{ album.title }}
@@ -134,7 +142,7 @@ onUnmounted(() => {
                             </ul>
                         </details>
                         <Link v-else :href="showAlbum(item.slug)">{{
-                                item.title
+                            item.title
                         }}</Link>
                     </li>
                 </ul>

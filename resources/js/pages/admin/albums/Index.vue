@@ -64,9 +64,7 @@ async function deleteAlbum(album: Album) {
         </Link>
     </div>
 
-    <div
-        class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4"
-    >
+    <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
         <InfiniteScroll data="pagination">
             <table class="table table-zebra">
                 <thead>
@@ -81,7 +79,10 @@ async function deleteAlbum(album: Album) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="album of pagination.data as Album[]" :key="album.id">
+                    <tr
+                        v-for="album of pagination.data as Album[]"
+                        :key="album.id"
+                    >
                         <td>{{ album.id }}</td>
                         <td>{{ album.category?.name ?? 'None' }}</td>
                         <td>{{ album.order }}</td>

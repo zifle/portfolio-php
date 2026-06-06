@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Auth;
 use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -35,5 +36,17 @@ class Category extends Model
     public function albums(): HasMany
     {
         return $this->hasMany(Album::class);
+    }
+
+    public function toArray(): array
+    {
+        $arr = parent::toArray();
+
+        if (Auth::guest()) {
+            unset($arr['id']);
+            unset($arr['order']);
+        }
+
+        return $arr;
     }
 }

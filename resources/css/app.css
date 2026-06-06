@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @plugin 'daisyui' {
-    themes: silk --default, dracula --prefersdark;
+    themes:
+        silk --default,
+        dracula --prefersdark;
 }
 
 @import 'tw-animate-css';
@@ -173,4 +175,3 @@
         @apply bg-background text-foreground;
     }
 }
-

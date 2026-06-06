@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Auth;
 use Carbon\CarbonImmutable;
 use Database\Factories\AlbumFactory;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -169,5 +170,22 @@ class Album extends Model
                 return $tags;
             }
         );
+    }
+
+    public function toArray(): array
+    {
+        $arr = parent::toArray();
+        unset($arr['images']);
+        unset($arr['text_boxes']);
+
+        if (Auth::guest()) {
+            unset($arr['id']);
+            unset($arr['created_at']);
+            unset($arr['updated_at']);
+            unset($arr['published_at']);
+            unset($arr['published']);
+        }
+
+        return $arr;
     }
 }

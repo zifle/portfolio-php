@@ -9,9 +9,10 @@ const firstImage = computed(() => {
     if (props.album.items?.length) {
         const img = props.album.items[0];
         const largestWidth = Object.keys(img.paths).pop();
-        const src = largestWidth && img.paths.hasOwnProperty(largestWidth)
-            ? img.paths[largestWidth]
-            : null;
+        const src =
+            largestWidth && img.paths.hasOwnProperty(largestWidth)
+                ? img.paths[largestWidth]
+                : null;
 
         return {
             src,
@@ -21,7 +22,7 @@ const firstImage = computed(() => {
     }
 
     return null;
-})
+});
 </script>
 
 <template>
@@ -30,8 +31,13 @@ const firstImage = computed(() => {
     <album-description :album="album"></album-description>
 
     <div class="flex justify-center">
-        <img v-if="firstImage" :src="firstImage.src"
-             :width="firstImage.w" :height="firstImage.h"
-             alt="" class="max-w-64">
+        <img
+            v-if="firstImage"
+            :src="firstImage.src"
+            :width="firstImage.w"
+            :height="firstImage.h"
+            alt=""
+            class="max-w-64"
+        />
     </div>
 </template>
