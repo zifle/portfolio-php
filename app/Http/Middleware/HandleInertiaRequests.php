@@ -60,6 +60,7 @@ class HandleInertiaRequests extends Middleware
             'menu' => static::buildMenu(),
             'locations' => $locations,
             'categories' => $categories,
+            'socials' => config('portfolio.social_links'),
         ];
     }
 

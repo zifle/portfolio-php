@@ -155,7 +155,6 @@ async function uploadImages(files: FileList | File[]) {
     uploadPlaceholders = [];
 
     try {
-        console.log(files);
         const props = await getImageDuplicationProps(files);
         const check = await checkImageDuplicates(props);
 

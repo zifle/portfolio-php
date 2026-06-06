@@ -35,4 +35,17 @@ return [
     |
     */
     'jpeg_quality' => env('PORTFOLIO_JPEG_QUALITY', '93'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Socials
+    |--------------------------------------------------------------------------
+    |
+    | Set up the links to your socials to include them in the main nav.
+    |
+    */
+    'social_links' => [
+        'facebook' => env('FACEBOOK_LINK'),
+        'instagram' => env('INSTAGRAM_LINK'),
+    ],
 ];

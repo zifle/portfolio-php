@@ -13,7 +13,19 @@ or easily modifiable.
 
 The backend is written in PHP using Laravel.
 
-_Setup instructions to be done later_
+When the repo is cloned, make sure to get all the dependencies;
+```shell
+$ composer install
+$ npm install
+```
+
+Create a `.env` file (copy the `.env.example` and adjust).
+Set up key, run migrations, and create a storage link:
+```shell
+$ php artisan key:generate
+$ php artisan migrate
+$ php artisan storage:link
+```
 
 Run the development/testing server with;
 ```shell

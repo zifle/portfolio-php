@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted } from 'vue';
+import { FacebookIcon, InstagramIcon } from 'vue3-simple-icons';
 import AppLogo from '@/components/AppLogo.vue';
 import { show as showAlbum } from '@/routes/album';
 import type { Album, Category } from '@/types/models';
@@ -10,6 +11,13 @@ const page = usePage();
 const menu = computed(() => {
     return page.props.menu as (Category | Album)[];
 });
+
+const socials = computed(() => {
+    return page.props.socials as {
+        facebook: string|null,
+        instagram: string|null,
+    }
+})
 
 function isCategory(item: Category | Album): item is Category {
     return item.hasOwnProperty('name') && item.hasOwnProperty('albums_count');
@@ -96,7 +104,14 @@ onUnmounted(() => {
                         </li>
                     </ul>
                 </div>
-                <div class="navbar-end"></div>
+                <div class="navbar-end gap-3 pe-2">
+                    <Link v-if="socials.facebook" :href="socials.facebook">
+                        <FacebookIcon></FacebookIcon>
+                    </Link>
+                    <Link v-if="socials.instagram" :href="socials.instagram">
+                        <InstagramIcon></InstagramIcon>
+                    </Link>
+                </div>
             </div>
 
             <div class="collapse-content z-1 lg:hidden">
