@@ -67,12 +67,6 @@ async function doUploadImage(
         xhr.responseType = 'json';
 
         xhr.upload.addEventListener('progress', (e) => {
-            if (upload.totalProgress) {
-                upload.totalProgress += e.loaded;
-            } else {
-                upload.totalProgress = e.loaded;
-            }
-
             placeholder.progress = e.loaded;
             const fp = upload.fileProgress.find(
                 (f) => f.filename === placeholder.filename,
@@ -220,7 +214,6 @@ async function uploadImages(files: FileList | File[]) {
                 const plcIdx = uploadPlaceholders.findIndex(
                     (a) => a.filename === file.name,
                 );
-                upload.totalSize -= uploadPlaceholders[plcIdx].size;
                 uploadPlaceholders.splice(plcIdx, 1);
                 upload.files_done++;
                 emit('filesUploaded', upload_data);
