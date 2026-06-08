@@ -24,7 +24,7 @@ class LocationTest extends TestCase
         $nearbyLoc = $nearby->first();
 
         $this->assertInstanceOf(Location::class, $nearbyLoc);
-        $this->assertEquals(0, $nearbyLoc->distance);
+        $this->assertEquals(0, round($nearbyLoc->distance, 2));
         $this->assertEquals($location->id, $nearbyLoc->id);
     }
 

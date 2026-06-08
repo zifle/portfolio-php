@@ -16,7 +16,6 @@ The backend is written in PHP using Laravel.
 When the repo is cloned, make sure to get all the dependencies;
 ```shell
 $ composer install
-$ npm install
 ```
 
 Create a `.env` file (copy the `.env.example` and adjust).

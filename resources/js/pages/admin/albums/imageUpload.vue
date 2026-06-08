@@ -2,6 +2,7 @@
 import { usePage } from '@inertiajs/vue3';
 import ExifReader from 'exifreader';
 import { onMounted, onUnmounted, reactive, useTemplateRef } from 'vue';
+import Queue from '@/lib/Queue';
 import { store as storeImage, checkDuplicates } from '@/routes/admin/images';
 import type { UploadPlaceholder } from '@/types';
 import type { Camera, Image, Lens, Location } from '@/types/models';
@@ -53,7 +54,7 @@ const upload = reactive({
     files_done: number;
 });
 let uploadPlaceholders: UploadPlaceholder[] = [];
-async function doUploadImages(
+async function doUploadImage(
     file: File,
     placeholder: UploadPlaceholder,
 ): Promise<SingleImageUploadReturn> {
@@ -144,6 +145,11 @@ async function checkImageDuplicates(props: ImageDupeProps[]) {
     };
 }
 
+type UploadQueueItem = {
+    file: File;
+    placeholder: UploadPlaceholder;
+    callback: (upload_data: SingleImageUploadReturn) => void;
+};
 async function uploadImages(files: FileList | File[]) {
     // Reset uploading alert
     upload.uploading = true;
@@ -171,7 +177,15 @@ async function uploadImages(files: FileList | File[]) {
 
         let coords: [number, number][] = [];
         const dates: string[] = [];
-        const uploadsPromises = [];
+        const queue: Queue<UploadQueueItem> = new Queue();
+
+        // Spawn workers to handle the uploads. We limit the number of workers
+        // to not overload the server with requests
+        const uploadWorkers: Promise<void>[] = [
+            uploadWorker(queue),
+            uploadWorker(queue),
+            uploadWorker(queue),
+        ];
 
         for (const file of files) {
             if (!file.type.startsWith('image/')) {
@@ -196,32 +210,34 @@ async function uploadImages(files: FileList | File[]) {
             });
             getImageThumbnail(file).then((b64) => (placeholder.src = b64));
 
-            const prom = doUploadImages(file, placeholder).then(
-                (upload_data) => {
-                    coords = [...coords, ...upload_data.coords];
+            const callback = (upload_data: SingleImageUploadReturn) => {
+                coords = [...coords, ...upload_data.coords];
 
-                    if (upload_data.date !== null) {
-                        dates.push(upload_data.date);
-                    }
+                if (upload_data.date !== null) {
+                    dates.push(upload_data.date);
+                }
 
-                    const plcIdx = uploadPlaceholders.findIndex(
-                        (a) => a.filename === file.name,
-                    );
-                    upload.totalSize -= uploadPlaceholders[plcIdx].size;
-                    uploadPlaceholders.splice(plcIdx, 1);
-                    upload.files_done++;
-                    emit('filesUploaded', upload_data);
-                },
-            );
+                const plcIdx = uploadPlaceholders.findIndex(
+                    (a) => a.filename === file.name,
+                );
+                upload.totalSize -= uploadPlaceholders[plcIdx].size;
+                uploadPlaceholders.splice(plcIdx, 1);
+                upload.files_done++;
+                emit('filesUploaded', upload_data);
+            };
+
+            queue.enqueue({ file, placeholder, callback });
+
             uploadPlaceholders.push(placeholder);
-            uploadsPromises.push(prom);
         }
+
+        queue.close();
 
         if (uploadPlaceholders.length > 0) {
             emit('placeholders', uploadPlaceholders);
         }
 
-        await Promise.all(uploadsPromises);
+        await Promise.all(uploadWorkers);
 
         if (dates.length > 0) {
             emit(
@@ -237,6 +253,15 @@ async function uploadImages(files: FileList | File[]) {
             upload.done = false;
             upload.files = upload.files_done = 0;
         }, 5000);
+    }
+}
+
+async function uploadWorker(queue: Queue<UploadQueueItem>) {
+    let q: undefined | UploadQueueItem;
+
+    while ((q = await queue.dequeue())) {
+        const resp = await doUploadImage(q.file, q.placeholder);
+        q.callback(resp);
     }
 }
 
