@@ -51,12 +51,18 @@ class Location extends Model
         $earthRadiusKm = 6371;
         [$lat, $lng] = static::getMeanGpsPosition($coords);
 
-        return static::addSelect(DB::raw("( $earthRadiusKm * acos( cos( radians($lat) ) * cos( radians( locations.lat ) )
+        $sub = static::select('id')
+            ->addSelect(DB::raw("( $earthRadiusKm * acos( cos( radians($lat) ) * cos( radians( locations.lat ) )
             * cos( radians(locations.lng) - radians($lng)) + sin(radians($lat))
-            * sin( radians(locations.lat)))) AS distance"))
+            * sin( radians(locations.lat)))) AS distance"));
+
+        $s = static::joinSub($sub->toSql(), 'locs', function ($join) {
+            $join->on('locs.id', '=', 'locations.id');
+        })
             ->where('distance', '<=', $maxDistanceKm)
-            ->orderBy('distance')
-            ->get();
+            ->orderBy('distance');
+
+        return $s->get();
     }
 
     public static function getMeanGpsPosition(array $coords): array
