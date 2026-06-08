@@ -71,10 +71,10 @@ async function deleteAlbum(album: Album) {
                     <tr>
                         <th>ID</th>
                         <th>Category</th>
-                        <th class="hidden md:visible">Order</th>
+                        <th class="hidden md:table-cell">Order</th>
                         <th>Title</th>
-                        <th class="hidden md:visible">Published</th>
-                        <th class="hidden md:visible">Images</th>
+                        <th class="hidden md:table-cell">Published</th>
+                        <th class="hidden md:table-cell">Images</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -85,9 +85,9 @@ async function deleteAlbum(album: Album) {
                     >
                         <td>{{ album.id }}</td>
                         <td>{{ album.category?.name ?? 'None' }}</td>
-                        <td class="hidden md:visible">{{ album.order }}</td>
+                        <td class="hidden md:table-cell">{{ album.order }}</td>
                         <td>{{ album.title }}</td>
-                        <td class="hidden md:visible">
+                        <td class="hidden md:table-cell">
                             <input
                                 type="checkbox"
                                 class="toggle toggle-success"
@@ -95,7 +95,7 @@ async function deleteAlbum(album: Album) {
                                 @change="togglePublished(album)"
                             />
                         </td>
-                        <td class="hidden md:visible">
+                        <td class="hidden md:table-cell">
                             {{ album.images_count }}
                         </td>
                         <td class="text-end">
