@@ -55,7 +55,10 @@ onUpdated(() => {
         if (!img.complete) {
             imgLoadPromises.push(
                 new Promise<void>((res) => {
-                    img.onload = () => res();
+                    img.onload = () => {
+                        img.classList.remove('opacity-0');
+                        res();
+                    };
                 }),
             );
         } else {
@@ -64,7 +67,7 @@ onUpdated(() => {
     }
 
     if (imgLoadPromises.length > 0) {
-        Promise.all(imgLoadPromises).then(() => {
+        Promise.any(imgLoadPromises).then(() => {
             emit('imgLoaded');
             stopLoading();
         });
@@ -218,6 +221,7 @@ const computedItems = computed(() => {
                 :height="item.height"
                 :style="`aspect-ratio: ${item.aspect};`"
                 decoding="async"
+                loading="lazy"
             />
             <p v-else-if="item.type === 'textbox'" class="text-box opacity-0">
                 {{ item.description }}
