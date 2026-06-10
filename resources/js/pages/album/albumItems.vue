@@ -201,25 +201,26 @@ const computedItems = computed(() => {
 
 <template>
     <div
-        class="relative z-1 columns-1 gap-2 px-1 *:mb-2 sm:px-2 md:columns-2 lg:columns-3 xl:columns-5"
+        class="relative z-1 content-stretch justify-evenly gap-2 px-1 *:mb-2 sm:px-2 md:flex md:flex-wrap"
         ref="images"
     >
         <div
             v-for="item of computedItems"
             :key="'itm_' + item.order"
-            class="image-container"
+            class="image-container w-full md:max-h-[80vh] md:min-h-96 md:w-min"
+            :style="'aspect' in item ? `aspect-ratio: ${item.aspect};` : ''"
+            style="flex: 1 1 auto; max-width: fit-content"
         >
             <img
                 v-if="item.type === 'image'"
                 :srcset="item.srcset"
                 :sizes="item.sizes"
                 :src="item.src"
-                class="image w-full opacity-0"
+                class="image h-full object-contain opacity-0"
                 @click="toggleGigante($event)"
                 :alt="item.desc"
                 :width="item.width"
                 :height="item.height"
-                :style="`aspect-ratio: ${item.aspect};`"
                 decoding="async"
                 loading="lazy"
             />
