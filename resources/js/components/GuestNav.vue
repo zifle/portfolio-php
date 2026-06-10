@@ -49,9 +49,7 @@ onUnmounted(() => {
 
 <template>
     <div class="p-2">
-        <div
-            class="relative z-2 w-full rounded-md bg-base-300 shadow-sm max-lg:collapse"
-        >
+        <div class="relative z-2 w-full max-lg:collapse">
             <input type="checkbox" id="navbar-toggle" class="peer hidden" />
             <label
                 for="navbar-toggle"
@@ -91,7 +89,7 @@ onUnmounted(() => {
                         >
                             <details v-if="isCategory(item)">
                                 <summary>{{ item.name }}</summary>
-                                <ul class="z-1 w-60 bg-base-100 p-2">
+                                <ul class="z-1 w-60 p-2">
                                     <li
                                         v-for="album in item.albums"
                                         :key="'alb-' + album.slug"
@@ -130,7 +128,7 @@ onUnmounted(() => {
                     >
                         <details v-if="isCategory(item)">
                             <summary>{{ item.name }}</summary>
-                            <ul class="z-1 w-60 bg-base-100 p-2">
+                            <ul class="z-1 w-60 p-2">
                                 <li
                                     v-for="album in item.albums"
                                     :key="'col_alb-' + album.slug"
