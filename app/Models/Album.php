@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * @property-read mixed $items
  * @property-read Location|null $location
  * @property-read mixed $published
+ * @property-read mixed $tags
  * @property-read Collection<int, TextBox> $text_boxes
  * @property-read int|null $text_boxes_count
  *

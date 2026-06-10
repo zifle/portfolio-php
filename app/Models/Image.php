@@ -35,6 +35,7 @@ use Illuminate\Support\Str;
  * @property numeric|null $aperture
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
+ * @property numeric $rating
  * @property-read AlbumItem|null $pivot
  * @property-read Collection<int, Album> $albums
  * @property-read int|null $albums_count
@@ -42,6 +43,7 @@ use Illuminate\Support\Str;
  * @property-read Lens|null $lens
  * @property-read mixed $order
  * @property-read mixed $paths
+ * @property-read mixed $srcset
  *
  * @method static \Database\Factories\ImageFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image newModelQuery()
@@ -62,6 +64,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image whereMaxHeight($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image whereMaxWidth($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image wherePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Image whereRating($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image whereUpdatedAt($value)
  *
  * @mixin \Eloquent
@@ -153,6 +156,9 @@ class Image extends Model
                 'model' => $lens_model,
             ]));
         }
+
+        $rating = $exif->get('Rating', 0);
+        $this->rating = $rating;
 
         $this->focal_length = $exif->getFloat('FocalLength');
         $this->focal_length_35 = $exif->getFloat('FocalLengthIn35mmFilm');

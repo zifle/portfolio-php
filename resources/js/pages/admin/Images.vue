@@ -2,7 +2,13 @@
 import { Head, InfiniteScroll, usePage, router } from '@inertiajs/vue3';
 import { Trash2, Aperture, Cone, Gauge, Camera, Settings } from '@lucide/vue';
 import { computed, ref } from 'vue';
-import { index, destroy, destroyUnused } from '@/routes/admin/images';
+import { toast } from 'vue-sonner';
+import {
+    index,
+    destroy,
+    destroyUnused,
+    update as updateImage,
+} from '@/routes/admin/images';
 import type { Image } from '@/types/models';
 
 defineOptions({
@@ -39,6 +45,9 @@ async function deleteImage(id: number) {
             'X-CSRFToken': csrf_token,
         },
     });
+
+    toast.success('Image deleted');
+
     router.visit(index(), {
         data: { filter: filter.value },
         only: ['pagination', 'unused_count', 'total_count'],
@@ -53,11 +62,35 @@ async function deleteUnused() {
             'X-CSRFToken': csrf_token,
         },
     });
+
+    toast.success('Images deleted');
+
     router.visit(index(), {
         data: { filter: filter.value },
         only: ['pagination', 'unused_count', 'total_count'],
         reset: ['pagination', 'unused_count', 'total_count'],
     });
+}
+
+async function updateImageRating(im: Image, rating: number) {
+    const path = updateImage(im.id);
+    const imCopy = {
+        id: im.id,
+        rating,
+    };
+    const response = await fetch(path.url, {
+        method: path.method,
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-CSRFToken': csrf_token,
+        },
+        body: JSON.stringify(imCopy),
+    });
+
+    toast.success('Rating updated');
+
+    return (await response.json()) as Image;
 }
 
 const list = ref();
@@ -123,10 +156,23 @@ function toggleUsedFilter() {
                         alt=""
                         class="size-14 rounded-box object-cover object-center lg:size-20"
                     />
-                    <div
-                        class="list-col-wrap text-center text-sm opacity-40 lg:text-lg"
-                    >
-                        {{ im.id }}
+                    <div class="list-col-wrap grid">
+                        <span class="text-center text-sm opacity-40 lg:text-lg">
+                            {{ im.id }}
+                        </span>
+                        <span class="rating flex justify-evenly">
+                            <input
+                                v-for="n in 5"
+                                type="radio"
+                                :key="`im_${im.id}_r${n}`"
+                                :name="`rating_${im.id}`"
+                                class="mask size-4 bg-orange-400 mask-star-2"
+                                :aria-label="`${n} star`"
+                                :value="n"
+                                :checked="n == im.rating"
+                                @change="updateImageRating(im, n)"
+                            />
+                        </span>
                     </div>
                     <div>
                         <p class="text-md list-col-wrap">

@@ -21,6 +21,9 @@ class Exif
             '0xA435' => 'LensSerialNumber',
             '0xA500' => 'Gamma',
         ],
+        'IFD0' => [
+            '0x4746' => 'Rating', // int
+        ],
     ];
 
     public function __construct($file)

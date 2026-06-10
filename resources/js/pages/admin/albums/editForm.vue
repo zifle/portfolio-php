@@ -2,6 +2,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import type { Ref } from 'vue';
 import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
 import {
     edit as editAlbum,
     store as storeAlbum,
@@ -44,6 +45,8 @@ async function doSaveAlbum(album: Album) {
             'X-CSRFToken': csrf_token,
         },
     });
+
+    toast.success('Album saved');
 
     return (await response.json()) as Album;
 }

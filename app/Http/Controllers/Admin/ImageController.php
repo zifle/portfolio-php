@@ -164,9 +164,16 @@ class ImageController extends Controller
      */
     public function update(Request $request, Image $image)
     {
-        // We only support updating the image description, all other properties
-        // are set when images are created (uploaded)
-        $image->description = $request->description;
+        // We only support updating the image description or rating,
+        // all other properties are set when images are created (uploaded)
+        if ($request->has('description')) {
+            $image->description = $request->description;
+        }
+
+        if ($request->has('rating')) {
+            $image->rating = $request->rating;
+        }
+
         $image->save();
 
         return $image;

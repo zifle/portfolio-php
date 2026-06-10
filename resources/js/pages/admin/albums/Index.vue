@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, InfiniteScroll, Link, router, usePage } from '@inertiajs/vue3';
 import { Plus, Pencil, Trash2 } from '@lucide/vue';
+import { toast } from 'vue-sonner';
 import {
     index,
     edit,
@@ -36,6 +37,8 @@ async function togglePublished(album: Album) {
         },
         body: JSON.stringify({ publish: album.published }),
     });
+
+    toast.success('Album ' + (album.published ? 'published' : 'unpublished'));
 }
 
 async function deleteAlbum(album: Album) {
@@ -50,6 +53,8 @@ async function deleteAlbum(album: Album) {
                 'X-CSRFToken': csrf_token,
             },
         });
+
+        toast.success('Album deleted');
         router.reload({ only: ['pagination', 'albums'] });
     }
 }

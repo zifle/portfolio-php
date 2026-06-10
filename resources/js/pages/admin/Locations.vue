@@ -2,6 +2,7 @@
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { Trash2, Pencil, Save } from '@lucide/vue';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 import { index, update, store, destroy } from '@/routes/admin/locations';
 import type { LocationUpdate } from '@/types/models';
 import type { RouteDefinition } from '@/wayfinder';
@@ -70,6 +71,8 @@ async function saveLocation(loc: LocationUpdate) {
         },
         body: JSON.stringify(body),
     });
+
+    toast.success('Location saved');
     loc.saving = false;
     loc.edit = false;
     router.reload({ only: ['locations'] });
@@ -82,6 +85,8 @@ async function deleteLocation(id: number) {
             'X-CSRFToken': csrf_token,
         },
     });
+
+    toast.success('Location deleted');
     router.reload({ only: ['locations'] });
 }
 

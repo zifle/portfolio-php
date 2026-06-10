@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $model
  * @property-read Collection<int, Image> $images
  * @property-read int|null $images_count
+ * @property-read mixed $str
  *
  * @method static \Database\Factories\CameraFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Camera newModelQuery()

@@ -2,6 +2,7 @@
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { Trash2, Pencil, Save } from '@lucide/vue';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 import { index, update, store, destroy } from '@/routes/admin/categories';
 import type { CategoryUpdate } from '@/types/models';
 import type { RouteDefinition } from '@/wayfinder';
@@ -63,6 +64,8 @@ async function saveCategory(cat: CategoryUpdate) {
         },
         body: JSON.stringify(body),
     });
+
+    toast.success('Category saved');
     cat.saving = false;
     cat.edit = false;
     router.reload({ only: ['categories'] });
@@ -75,6 +78,8 @@ async function deleteCategory(id: number) {
             'X-CSRFToken': csrf_token,
         },
     });
+
+    toast.success('Category deleted');
     router.reload({ only: ['categories'] });
 }
 

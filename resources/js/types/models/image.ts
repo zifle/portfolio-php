@@ -17,6 +17,7 @@ export type Image = {
     exposure_time: string | null;
     exposure_compensation: number | null;
     aperture: number | null;
+    rating: number | null;
 
     created_at?: string;
     updated_at?: string;
