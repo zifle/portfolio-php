@@ -59,7 +59,7 @@ async function deleteAlbum(album: Album) {
     <Head title="Albums" />
 
     <div class="fab">
-        <Link :href="create()" class="btn btn-circle btn-lg btn-primary">
+        <Link :href="create()" class="btn btn-circle btn-lg btn-success">
             <Plus></Plus>
         </Link>
     </div>
