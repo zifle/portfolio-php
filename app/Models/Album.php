@@ -196,13 +196,17 @@ class Album extends Model implements Viewable
     {
         return Attribute::make(
             get: function () {
-                $image = $this->images->first();
+                foreach ($this->items as $item) {
+                    if ($item instanceof Image) {
+                        $minWidth = 1200; // Facebook recommends at least 1200px width
 
-                $minWidth = 1200; // Facebook recommends at least 1200px width
+                        foreach ($item->paths as $width => $path) {
+                            if ($width >= $minWidth) {
+                                return $path;
+                            }
+                        }
 
-                foreach ($image->paths as $width => $path) {
-                    if ($width >= $minWidth) {
-                        return $path;
+                        break;
                     }
                 }
 
