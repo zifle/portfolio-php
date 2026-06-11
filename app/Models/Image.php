@@ -5,6 +5,8 @@ namespace App\Models;
 use App\Library\Exif;
 use Auth;
 use Carbon\CarbonImmutable;
+use CyrildeWit\EloquentViewable\Contracts\Viewable;
+use CyrildeWit\EloquentViewable\InteractsWithViews;
 use Database\Factories\ImageFactory;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -70,10 +72,10 @@ use Illuminate\Support\Str;
  * @mixin \Eloquent
  */
 #[Appends(['paths'])]
-class Image extends Model
+class Image extends Model implements Viewable
 {
     /** @use HasFactory<ImageFactory> */
-    use HasFactory;
+    use HasFactory, InteractsWithViews;
 
     protected function casts(): array
     {
@@ -199,7 +201,6 @@ class Image extends Model
         $arr = parent::toArray();
 
         if (Auth::guest()) {
-            unset($arr['id']);
             unset($arr['path']);
             unset($arr['date_taken']);
             unset($arr['available_res']);

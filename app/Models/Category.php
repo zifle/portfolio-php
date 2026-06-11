@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Auth;
+use CyrildeWit\EloquentViewable\Contracts\Viewable;
+use CyrildeWit\EloquentViewable\InteractsWithViews;
 use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,10 +28,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @mixin \Eloquent
  */
-class Category extends Model
+class Category extends Model implements Viewable
 {
     /** @use HasFactory<CategoryFactory> */
-    use HasFactory;
+    use HasFactory, InteractsWithViews;
 
     public $timestamps = false;
 

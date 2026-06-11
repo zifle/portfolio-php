@@ -7,6 +7,7 @@ import {
     watch,
     onUnmounted,
 } from 'vue';
+import { viewedImage } from '@/actions/App/Http/Controllers/ViewController';
 import { debounce } from '@/lib/debounce';
 import { toggleGigante } from '@/lib/gigante/gigante';
 import { isImage, isTextBox } from '@/types/models';
@@ -84,10 +85,12 @@ const resizeDB = debounce(() => {
         }
     }
 }, 100);
-const ro = new ResizeObserver(() => {
-    resizeDB();
-});
+let ro: ResizeObserver;
 onMounted(() => {
+    ro = new ResizeObserver(() => {
+        resizeDB();
+    });
+
     if (images.value) {
         ro.observe(images.value);
     }
@@ -97,6 +100,7 @@ onUnmounted(() => {
 });
 
 type ImageItem = {
+    id: number;
     order: number;
     gridSize: number;
     col: number;
@@ -172,6 +176,7 @@ const computedItems = computed(() => {
             _item.desc = item.description || 'Photo#' + item.order;
             _item.width = item.max_width;
             _item.height = item.max_height;
+            _item.id = item.id;
             albItem = _item as ImageItem;
         } else if (isTextBox(item)) {
             _item.type = 'textbox';
@@ -186,6 +191,16 @@ const computedItems = computed(() => {
 
     return rtn.toSorted((a, b) => a.order - b.order);
 });
+
+function showFullImage(id: number, ev: PointerEvent) {
+    toggleGigante(ev);
+
+    if ('sendBeacon' in navigator) {
+        try {
+            navigator.sendBeacon(viewedImage(id).url);
+        } catch {}
+    }
+}
 </script>
 
 <template>
@@ -206,7 +221,7 @@ const computedItems = computed(() => {
                 :sizes="item.sizes"
                 :src="item.src"
                 class="image h-full object-contain opacity-0"
-                @click="toggleGigante($event)"
+                @click="showFullImage(item.id, $event)"
                 :alt="item.desc"
                 :width="item.width"
                 :height="item.height"

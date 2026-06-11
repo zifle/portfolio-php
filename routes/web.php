@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ImageController;
 use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\TextBoxController;
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\ViewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AlbumController::class, 'welcome'])->name('home');
@@ -30,5 +31,7 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::get('/album/{album:slug}', [AlbumController::class, 'show'])->name('album.show');
+
+Route::post('/view/image/{image}', [ViewController::class, 'viewedImage'])->name('image.viewed');
 
 require __DIR__.'/settings.php';

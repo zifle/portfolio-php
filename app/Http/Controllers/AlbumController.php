@@ -22,6 +22,14 @@ class AlbumController extends Controller
         $album->append(['items', 'tags'])
             ->load(['location']);
 
+        try {
+            views($album)->record();
+            if ($album->category) {
+                views($album->category)->record();
+            }
+        } catch (\Throwable) {
+        }
+
         return Inertia::render('album/Show', [
             'album' => $album,
         ]);
@@ -42,6 +50,11 @@ class AlbumController extends Controller
             $album = new Album;
             $album->title = 'Welcome';
             $album->description = '';
+        } else {
+            try {
+                views($album)->record();
+            } catch (\Throwable) {
+            }
         }
 
         return Inertia::render('Welcome', [

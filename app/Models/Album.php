@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Auth;
 use Carbon\CarbonImmutable;
+use CyrildeWit\EloquentViewable\Contracts\Viewable;
+use CyrildeWit\EloquentViewable\InteractsWithViews;
 use Database\Factories\AlbumFactory;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -63,10 +65,10 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * @mixin \Eloquent
  */
 #[Appends(['published'])]
-class Album extends Model
+class Album extends Model implements Viewable
 {
     /** @use HasFactory<AlbumFactory> */
-    use HasFactory;
+    use HasFactory, InteractsWithViews;
 
     protected function casts(): array
     {
