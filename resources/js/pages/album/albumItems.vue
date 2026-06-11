@@ -3,7 +3,6 @@ import {
     computed,
     onUpdated,
     onMounted,
-    ref,
     useTemplateRef,
     watch,
     onUnmounted,
@@ -74,30 +73,27 @@ onUpdated(() => {
     }
 });
 
-const getNumCols = () => {
-    const vw = window.innerWidth;
-    let cols = 1;
-
-    if (vw >= 800 && vw < 1200) {
-        cols = 3;
-    } else if (vw >= 1200 && vw < 1600) {
-        cols = 4;
-    } else if (vw >= 1600) {
-        cols = 5;
-    }
-
-    return cols;
-};
-const numCols = ref();
 const resizeDB = debounce(() => {
-    numCols.value = getNumCols();
-}, 50);
+    if (images.value) {
+        const imgs = (images.value.querySelectorAll('.image') ??
+            []) as NodeListOf<HTMLImageElement>;
+
+        for (const image of imgs) {
+            const w = image.getBoundingClientRect().width;
+            image.sizes = `(max-width: 767px) 100vw, ${Math.ceil(w)}px`;
+        }
+    }
+}, 100);
+const ro = new ResizeObserver(() => {
+    resizeDB();
+});
 onMounted(() => {
-    numCols.value = getNumCols();
-    window.addEventListener('resize', resizeDB);
+    if (images.value) {
+        ro.observe(images.value);
+    }
 });
 onUnmounted(() => {
-    window.removeEventListener('resize', resizeDB);
+    ro.disconnect();
 });
 
 type ImageItem = {
@@ -125,11 +121,8 @@ type AlbItem = ImageItem | TextBoxItem;
 const computedItems = computed(() => {
     const rtn: AlbItem[] = [];
     const vw = typeof window !== 'undefined' ? window.innerWidth : 2000;
-    const cols = numCols.value;
-    const colWidth = vw / cols;
     let col = 0;
-    const sizes =
-        '(max-width: 767px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 20vw';
+    const sizes = '(max-width: 767px) 100vw';
 
     for (const item of albumItems.value) {
         const _item: { [key: string]: any } = {
@@ -139,10 +132,6 @@ const computedItems = computed(() => {
         };
         let albItem: AlbItem | undefined = undefined;
         col += 1;
-
-        if (col >= cols) {
-            col = 0;
-        }
 
         if (isImage(item)) {
             let srcset = [];
@@ -157,11 +146,7 @@ const computedItems = computed(() => {
                 }
             }
 
-            let maxImgWidth = colWidth * _item.gridSize;
-
-            if (cols < _item.gridSize) {
-                maxImgWidth = vw;
-            }
+            const maxImgWidth = vw;
 
             let width = maxImgWidth;
 
@@ -175,9 +160,13 @@ const computedItems = computed(() => {
                 }
             }
 
+            const minWidth = Math.round(
+                (item.max_width / item.max_height) * 384,
+            );
+
             _item.type = 'image';
             _item.srcset = srcset.join(',');
-            _item.sizes = sizes;
+            _item.sizes = sizes + ', ' + minWidth + 'px';
             _item.src = item.paths[width];
             _item.aspect = item.max_width / item.max_height;
             _item.desc = item.description || 'Photo#' + item.order;
