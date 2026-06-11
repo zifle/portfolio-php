@@ -153,6 +153,7 @@ const computedItems = computed(() => {
             const maxImgWidth = vw;
 
             let width = maxImgWidth;
+            let smallestWidth = 2000;
 
             for (const w in item.paths) {
                 const wNum = parseInt(w);
@@ -161,6 +162,10 @@ const computedItems = computed(() => {
                     if (wNum < width) {
                         width = wNum;
                     }
+                }
+
+                if (item.paths.hasOwnProperty(w) && smallestWidth > wNum) {
+                    smallestWidth = wNum;
                 }
             }
 
@@ -171,7 +176,7 @@ const computedItems = computed(() => {
             _item.type = 'image';
             _item.srcset = srcset.join(',');
             _item.sizes = sizes + ', ' + minWidth + 'px';
-            _item.src = item.paths[width];
+            _item.src = item.paths[smallestWidth];
             _item.aspect = item.max_width / item.max_height;
             _item.desc = item.description || 'Photo#' + item.order;
             _item.width = item.max_width;
