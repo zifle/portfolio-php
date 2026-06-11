@@ -77,12 +77,9 @@ const albumDescription = computed(() => {
                     </span>
                 </p>
             </div>
-            <div
-                class="justify-items-center px-3 py-3 md:px-10 md:py-7"
-                v-if="album.description"
-            >
+            <div class="px-3 py-3 md:px-10 md:py-7" v-if="album.description">
                 <p
-                    class="max-w-[60rem] whitespace-pre-wrap"
+                    class="mx-auto max-w-[60rem] whitespace-pre-wrap"
                     v-html="albumDescription"
                 ></p>
             </div>

@@ -222,7 +222,7 @@ function showFullImage(id: number, ev: PointerEvent) {
                 :src="item.src"
                 class="image h-full object-contain opacity-0"
                 @click="showFullImage(item.id, $event)"
-                :alt="item.desc"
+                alt=""
                 :width="item.width"
                 :height="item.height"
                 decoding="async"
