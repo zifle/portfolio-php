@@ -6,6 +6,7 @@ use Auth;
 use Carbon\CarbonImmutable;
 use CyrildeWit\EloquentViewable\Contracts\Viewable;
 use CyrildeWit\EloquentViewable\InteractsWithViews;
+use CyrildeWit\EloquentViewable\View;
 use Database\Factories\AlbumFactory;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -37,16 +38,22 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * @property-read int|null $images_count
  * @property-read mixed $items
  * @property-read Location|null $location
+ * @property-read mixed $meta_image
  * @property-read mixed $published
+ * @property-read mixed $short_description
  * @property-read mixed $tags
  * @property-read Collection<int, TextBox> $text_boxes
  * @property-read int|null $text_boxes_count
+ * @property-read Collection<int, View> $views
+ * @property-read int|null $views_count
  *
  * @method static \Database\Factories\AlbumFactory factory($count = null, $state = [])
  * @method static Builder<static>|Album isArchived()
  * @method static Builder<static>|Album isPublished()
  * @method static Builder<static>|Album newModelQuery()
  * @method static Builder<static>|Album newQuery()
+ * @method static Builder<static>|Album orderByUniqueViews(string $direction = 'desc', $period = null, ?string $collection = null, string $as = 'unique_views_count')
+ * @method static Builder<static>|Album orderByViews(string $direction = 'desc', ?\CyrildeWit\EloquentViewable\Support\Period $period = null, ?string $collection = null, bool $unique = false, string $as = 'views_count')
  * @method static Builder<static>|Album query()
  * @method static Builder<static>|Album whereArchivedAt($value)
  * @method static Builder<static>|Album whereCategoryId($value)
@@ -61,6 +68,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * @method static Builder<static>|Album whereSlug($value)
  * @method static Builder<static>|Album whereTitle($value)
  * @method static Builder<static>|Album whereUpdatedAt($value)
+ * @method static Builder<static>|Album withViewsCount(?\CyrildeWit\EloquentViewable\Support\Period $period = null, ?string $collection = null, bool $unique = false, string $as = 'views_count')
  *
  * @mixin \Eloquent
  */
@@ -171,6 +179,34 @@ class Album extends Model implements Viewable
                     });
 
                 return $tags;
+            }
+        );
+    }
+
+    protected function shortDescription(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return explode(PHP_EOL.PHP_EOL, $this->description)[0];
+            }
+        );
+    }
+
+    protected function metaImage(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $image = $this->images->first();
+
+                $minWidth = 1200; // Facebook recommends at least 1200px width
+
+                foreach ($image->paths as $width => $path) {
+                    if ($width >= $minWidth) {
+                        return $path;
+                    }
+                }
+
+                return '';
             }
         );
     }

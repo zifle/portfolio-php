@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { Category, Location } from '@/types/models';
 
 // Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
@@ -19,6 +20,12 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
+            csrf_token: string;
+            menu: [];
+            locations: Location[];
+            categories: Category[];
+            socials: { [key: string]: string };
+            url: string;
             [key: string]: unknown;
         };
     }

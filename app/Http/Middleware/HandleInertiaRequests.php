@@ -61,6 +61,7 @@ class HandleInertiaRequests extends Middleware
             'locations' => $locations,
             'categories' => $categories,
             'socials' => config('portfolio.social_links'),
+            'url' => $request->url(),
         ];
     }
 

@@ -48,4 +48,17 @@ return [
         'facebook' => env('FACEBOOK_LINK'),
         'instagram' => env('INSTAGRAM_LINK'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Meta
+    |--------------------------------------------------------------------------
+    |
+    | Meta properties for the page
+    |
+    */
+    'meta' => [
+        // Keywords used on the meta-keywords tag on the welcome page
+        'keywords' => 'welcome, portfolio, photography, cameras, blog, events, concerts',
+    ],
 ];

@@ -7,6 +7,7 @@ use Auth;
 use Carbon\CarbonImmutable;
 use CyrildeWit\EloquentViewable\Contracts\Viewable;
 use CyrildeWit\EloquentViewable\InteractsWithViews;
+use CyrildeWit\EloquentViewable\View;
 use Database\Factories\ImageFactory;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -46,10 +47,14 @@ use Illuminate\Support\Str;
  * @property-read mixed $order
  * @property-read mixed $paths
  * @property-read mixed $srcset
+ * @property-read Collection<int, View> $views
+ * @property-read int|null $views_count
  *
  * @method static \Database\Factories\ImageFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Image orderByUniqueViews(string $direction = 'desc', $period = null, ?string $collection = null, string $as = 'unique_views_count')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Image orderByViews(string $direction = 'desc', ?\CyrildeWit\EloquentViewable\Support\Period $period = null, ?string $collection = null, bool $unique = false, string $as = 'views_count')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image whereAperture($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image whereAvailableRes($value)
@@ -68,6 +73,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image wherePath($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image whereRating($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Image whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Image withViewsCount(?\CyrildeWit\EloquentViewable\Support\Period $period = null, ?string $collection = null, bool $unique = false, string $as = 'views_count')
  *
  * @mixin \Eloquent
  */

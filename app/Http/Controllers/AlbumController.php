@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Album;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
 use Inertia\Inertia;
 
 class AlbumController extends Controller
@@ -21,6 +22,11 @@ class AlbumController extends Controller
 
         $album->append(['items', 'tags'])
             ->load(['location']);
+
+        View::share('metaKeywords', implode(', ', $album->tags));
+        View::share('metaDescription', $album->short_description);
+        View::share('metaImage', $album->meta_image);
+        View::share('metaTitle', $album->title);
 
         try {
             views($album)->record();
@@ -44,6 +50,8 @@ class AlbumController extends Controller
             }
         )->first()?->append(['items']);
 
+        View::share('metaKeywords', config('portfolio.meta.keywords'));
+
         if (! $album) {
             // To set up the "welcome" / homepage, create an album with the
             // category of "Welcome", unpublished.
@@ -51,6 +59,10 @@ class AlbumController extends Controller
             $album->title = 'Welcome';
             $album->description = '';
         } else {
+            View::share('metaDescription', $album->short_description);
+            View::share('metaImage', $album->meta_image);
+            View::share('metaTitle', $album->title);
+
             try {
                 views($album)->record();
             } catch (\Throwable) {

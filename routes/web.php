@@ -7,11 +7,12 @@ use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\TextBoxController;
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\ViewController;
+use App\Http\Middleware\RobotsNoIndex;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AlbumController::class, 'welcome'])->name('home');
 
-Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'verified', RobotsNoIndex::class])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
     Route::permanentRedirect('/', 'admin/dashboard');
 

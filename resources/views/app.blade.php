@@ -35,6 +35,15 @@
 
         @fonts
 
+        <meta name="og:type" content="website">
+        <meta name="og:url" content="{{ request()->url() }}">
+        @if(isset($metaTitle))<meta name="og:title" content="{{ $metaTitle }}">@endif
+        @if(isset($metaImage))<meta name="og:image" content="{{ $metaImage }}">@endif
+        @if(isset($metaDescription))<meta name="description" content="{{ $metaDescription }}">@endif
+
+        <meta name="robots" content="{{ $metaRobots ?? 'index,follow' }}">
+        @if(isset($metaKeywords))<meta name="keywords" content="{{ $metaKeywords }}">@endif
+
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head>
             <title>{{ config('app.name', 'Laravel') }}</title>
