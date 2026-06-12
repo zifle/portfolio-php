@@ -44,6 +44,7 @@ use Illuminate\Support\Str;
  * @property-read int|null $albums_count
  * @property-read Camera|null $camera
  * @property-read Lens|null $lens
+ * @property-read mixed $meta_image
  * @property-read mixed $order
  * @property-read mixed $paths
  * @property-read mixed $srcset
@@ -142,6 +143,23 @@ class Image extends Model implements Viewable
     {
         return Attribute::make(
             get: fn () => $this->pivot?->order
+        );
+    }
+
+    protected function metaImage(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $minWidth = 1200; // Facebook recommends at least 1200px width
+
+                foreach ($this?->paths as $width => $path) {
+                    if ($width >= $minWidth) {
+                        return $path;
+                    }
+                }
+
+                return '';
+            }
         );
     }
 

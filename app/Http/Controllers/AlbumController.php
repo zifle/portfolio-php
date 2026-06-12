@@ -25,7 +25,11 @@ class AlbumController extends Controller
 
         View::share('metaKeywords', implode(', ', $album->tags));
         View::share('metaDescription', $album->short_description);
-        View::share('metaImage', $album->meta_image);
+        $firstImg = $album->first_image;
+        if ($firstImg) {
+            View::share('metaImage', $firstImg->meta_image);
+            View::share('metaImageAlt', $firstImg->description);
+        }
         View::share('metaTitle', $album->title);
 
         try {
@@ -60,7 +64,11 @@ class AlbumController extends Controller
             $album->description = '';
         } else {
             View::share('metaDescription', $album->short_description);
-            View::share('metaImage', $album->meta_image);
+            $firstImg = $album->first_image;
+            if ($firstImg) {
+                View::share('metaImage', $firstImg->meta_image);
+                View::share('metaImageAlt', $firstImg->description);
+            }
             View::share('metaTitle', $album->title);
 
             try {

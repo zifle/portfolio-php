@@ -35,6 +35,7 @@
 
         @fonts
 
+        <meta name="og:site_name" content="{{ config('app.name', 'Portfolio') }}">
         <meta name="og:type" content="website">
         <meta name="og:url" content="{{ request()->url() }}">
         @if(isset($metaTitle))<meta name="og:title" content="{{ $metaTitle }}">@endif

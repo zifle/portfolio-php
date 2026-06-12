@@ -33,12 +33,12 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Category|null $category
+ * @property-read mixed $first_image
  * @property-read AlbumItem|null $pivot
  * @property-read Collection<int, Image> $images
  * @property-read int|null $images_count
  * @property-read mixed $items
  * @property-read Location|null $location
- * @property-read mixed $meta_image
  * @property-read mixed $published
  * @property-read mixed $short_description
  * @property-read mixed $tags
@@ -192,25 +192,17 @@ class Album extends Model implements Viewable
         );
     }
 
-    protected function metaImage(): Attribute
+    protected function firstImage(): Attribute
     {
         return Attribute::make(
             get: function () {
                 foreach ($this->items as $item) {
                     if ($item instanceof Image) {
-                        $minWidth = 1200; // Facebook recommends at least 1200px width
-
-                        foreach ($item->paths as $width => $path) {
-                            if ($width >= $minWidth) {
-                                return $path;
-                            }
-                        }
-
-                        break;
+                        return $item;
                     }
                 }
 
-                return '';
+                return null;
             }
         );
     }
