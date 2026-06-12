@@ -51,6 +51,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Copyright information
+    |--------------------------------------------------------------------------
+    |
+    | Set the year of initial publication, and the name of the copyright
+    | holder to include it in the footer. Both fields are optional.
+    | Setting a 'from year' will make the copyright notice automatically
+    | display `C{from}-{to}`, when the years differ
+    |
+    */
+    'copyright' => [
+        'from_year' => env('COPYRIGHT_FROM_YEAR', date('Y')),
+        'holder' => env('COPYRIGHT_HOLDER'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Meta
     |--------------------------------------------------------------------------
     |

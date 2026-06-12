@@ -52,5 +52,13 @@
     </head>
     <body class="font-sans antialiased">
         <x-inertia::app />
+
+        @if(request()->route()->getPrefix() !== '/admin')
+        <div class="footer sm:footer-horizontal justify-end my-4 px-3">
+            <aside>
+                <p>&copy;{{ date('Y') }} {{ $copyrightHolder ?? '' }} - All rights reserved.</p>
+            </aside>
+        </div>
+        @endif
     </body>
 </html>
