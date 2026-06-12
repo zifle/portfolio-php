@@ -35,16 +35,15 @@
 
         @fonts
 
-        <meta name="og:site_name" content="{{ config('app.name', 'Portfolio') }}">
-        <meta name="og:type" content="website">
-        <meta name="og:url" content="{{ request()->url() }}">
-        @if(isset($metaTitle))<meta name="og:title" content="{{ $metaTitle }}">@endif
-        @if(isset($metaImage))<meta name="og:image" content="{{ $metaImage }}">@endif
-        @if(isset($metaImageAlt))<meta name="og:image:alt" content="{{ $metaImageAlt }}">@endif
-        @if(isset($metaDescription))<meta name="description" content="{{ $metaDescription }}">@endif
+        <meta property="og:site_name" content="{{ config('app.name', 'Portfolio') }}">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ request()->url() }}">
+        @if(isset($metaTitle))<meta property="og:title" content="{{ $metaTitle }}">@endif
+        @if(isset($metaImage))<meta property="og:image" content="{{ $metaImage }}">@endif
+        @if(isset($metaImageAlt))<meta property="og:image:alt" content="{{ $metaImageAlt }}">@endif
+        @if(isset($metaDescription))<meta name="description" property="og:description" content="{{ $metaDescription }}">@endif
 
         <meta name="robots" content="{{ $metaRobots ?? 'index,follow' }}">
-        @if(isset($metaKeywords))<meta name="keywords" content="{{ $metaKeywords }}">@endif
 
         @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/pages/{$page['component']}.vue"])
         <x-inertia::head>

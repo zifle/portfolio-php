@@ -178,7 +178,7 @@ const computedItems = computed(() => {
             _item.sizes = sizes + ', ' + minWidth + 'px';
             _item.src = item.paths[smallestWidth];
             _item.aspect = item.max_width / item.max_height;
-            _item.desc = item.description || 'Photo#' + item.order;
+            _item.desc = item.description ?? '';
             _item.width = item.max_width;
             _item.height = item.max_height;
             _item.id = item.id;
@@ -227,7 +227,7 @@ function showFullImage(id: number, ev: PointerEvent) {
                 :src="item.src"
                 class="image h-full object-contain opacity-0"
                 @click="showFullImage(item.id, $event)"
-                alt=""
+                :alt="item.desc"
                 :width="item.width"
                 :height="item.height"
                 decoding="async"
