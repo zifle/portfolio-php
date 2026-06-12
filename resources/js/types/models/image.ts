@@ -27,6 +27,7 @@ export type Image = {
     albums?: Album[];
     order?: number;
     pivot?: AlbumItemPivot;
+    views_count?: number;
 
     srcset?: string[];
 };

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Album;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
 use Inertia\Inertia;
 
@@ -47,12 +48,7 @@ class AlbumController extends Controller
 
     public function welcome()
     {
-        $album = Album::whereHas(
-            'category',
-            function (Builder $query) {
-                $query->where('name', 'Welcome');
-            }
-        )->first()?->append(['items']);
+        $album = $this->welcomeAlbum()?->append(['items']);
 
         View::share('metaKeywords', config('portfolio.meta.keywords'));
 
@@ -80,5 +76,17 @@ class AlbumController extends Controller
         return Inertia::render('Welcome', [
             'album' => $album,
         ]);
+    }
+
+    public static function welcomeAlbum(): ?Album
+    {
+        return Cache::remember('welcome_album', now()->addDay(), function () {
+            return Album::whereHas(
+                'category',
+                function (Builder $query) {
+                    $query->where('name', 'Welcome');
+                }
+            )->first();
+        });
     }
 }

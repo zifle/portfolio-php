@@ -20,6 +20,7 @@ export type Album = {
 
     images_count?: number;
     text_boxes_count?: number;
+    views_count?: number;
     published: boolean;
 
     location?: Location;

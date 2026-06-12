@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ImageController;
 use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\TextBoxController;
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ViewController;
 use App\Http\Middleware\RobotsNoIndex;
 use Illuminate\Support\Facades\Route;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [AlbumController::class, 'welcome'])->name('home');
 
 Route::prefix('admin')->middleware(['auth', 'verified', RobotsNoIndex::class])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::permanentRedirect('/', 'admin/dashboard');
 
     Route::name('admin.')->group(function () {
