@@ -52,9 +52,9 @@ class Location extends Model
         [$lat, $lng] = static::getMeanGpsPosition($coords);
 
         $sub = static::select('id')
-            ->addSelect(DB::raw("( $earthRadiusKm * acos( cos( radians($lat) ) * cos( radians( locations.lat ) )
+            ->addSelect(DB::raw("IFNULL( $earthRadiusKm * acos( cos( radians($lat) ) * cos( radians( locations.lat ) )
             * cos( radians(locations.lng) - radians($lng)) + sin(radians($lat))
-            * sin( radians(locations.lat)))) AS distance"));
+            * sin( radians(locations.lat))), 0) AS distance"));
 
         $s = static::joinSub($sub->toSql(), 'locs', function ($join) {
             $join->on('locs.id', '=', 'locations.id');

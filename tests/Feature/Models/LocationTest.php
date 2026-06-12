@@ -28,6 +28,29 @@ class LocationTest extends TestCase
         $this->assertEquals($location->id, $nearbyLoc->id);
     }
 
+    public function test_exact_location()
+    {
+        $location = new Location;
+        $location->name = 'Bergnaum-Skiles';
+        $location->lat = 47.711999;
+        $location->lng = 37.018417;
+        $location->save();
+
+        $lat = $location->lat;
+        $lng = $location->lng;
+
+        $nearby = Location::getNearby([
+            [$lat, $lng],
+        ]);
+
+        $this->assertNotEmpty($nearby);
+        $nearbyLoc = $nearby->first();
+
+        $this->assertInstanceOf(Location::class, $nearbyLoc);
+        $this->assertEquals(0, round($nearbyLoc->distance, 2));
+        $this->assertEquals($location->id, $nearbyLoc->id);
+    }
+
     public function test_no_nearby_locations()
     {
         $location = Location::factory()->create();
