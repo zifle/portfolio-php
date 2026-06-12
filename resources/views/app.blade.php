@@ -40,6 +40,7 @@
         <meta name="og:url" content="{{ request()->url() }}">
         @if(isset($metaTitle))<meta name="og:title" content="{{ $metaTitle }}">@endif
         @if(isset($metaImage))<meta name="og:image" content="{{ $metaImage }}">@endif
+        @if(isset($metaImageAlt))<meta name="og:image:alt" content="{{ $metaImageAlt }}">@endif
         @if(isset($metaDescription))<meta name="description" content="{{ $metaDescription }}">@endif
 
         <meta name="robots" content="{{ $metaRobots ?? 'index,follow' }}">
