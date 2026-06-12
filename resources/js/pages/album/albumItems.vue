@@ -216,7 +216,7 @@ function showFullImage(id: number, ev: PointerEvent) {
         <div
             v-for="item of computedItems"
             :key="'itm_' + item.order"
-            class="image-container w-full md:max-h-[80vh] md:min-h-96 md:w-min"
+            class="image-container w-full md:max-h-[80vh] md:min-h-60 md:w-min xl:min-h-96"
             :style="'aspect' in item ? `aspect-ratio: ${item.aspect};` : ''"
             style="flex: 1 1 auto; max-width: fit-content"
         >
