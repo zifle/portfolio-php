@@ -2,6 +2,7 @@
 import { usePage } from '@inertiajs/vue3';
 import type { Ref } from 'vue';
 import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue';
+import { largestImage } from '@/lib/utils';
 import { update as updateImage } from '@/routes/admin/images';
 import { store as storeText, update as updateText } from '@/routes/admin/texts';
 import type { UploadPlaceholder } from '@/types';
@@ -54,7 +55,6 @@ const itemsList = computed(() => {
         if (isImage(item)) {
             const srcset: string[] = [];
             const sizes: string[] = [];
-            const max_width = item.max_width;
 
             for (const width in item.paths) {
                 if (item.paths.hasOwnProperty(width)) {
@@ -69,7 +69,7 @@ const itemsList = computed(() => {
             _item['type'] = 'image';
 
             if (isImageListItem(_item)) {
-                _item['src'] = item.paths[max_width];
+                _item['src'] = largestImage(item);
 
                 _item['srcset'] = srcset.join(',');
                 _item['sizes'] = sizes.join(',');

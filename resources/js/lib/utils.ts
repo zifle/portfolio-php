@@ -13,21 +13,7 @@ export function toUrl(href: NonNullable<InertiaLinkProps['href']>) {
 }
 
 export function largestImage(image: Image) {
-    let width = 0;
-
-    for (const w in image.paths) {
-        if (image.paths.hasOwnProperty(w)) {
-            if (parseInt(w) > width) {
-                width = parseInt(w);
-            }
-        }
-    }
-
-    if (image.paths.hasOwnProperty('' + width)) {
-        return image.paths['' + width];
-    }
-
-    return null;
+    return image.paths[image.max_width];
 }
 
 export function smallestImage(image: Image) {
@@ -41,8 +27,8 @@ export function smallestImage(image: Image) {
         }
     }
 
-    if (image.paths.hasOwnProperty('' + width)) {
-        return image.paths['' + width];
+    if (image.paths.hasOwnProperty(width)) {
+        return image.paths[width];
     }
 
     return null;

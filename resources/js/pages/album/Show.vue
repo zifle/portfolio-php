@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, useTemplateRef } from 'vue';
+import { largestImage } from '@/lib/utils';
 import AlbumDescription from '@/pages/album/albumDescription.vue';
 import AlbumItems from '@/pages/album/albumItems.vue';
 import { isImage } from '@/types/models';
@@ -31,7 +32,7 @@ function setAlbumBackground() {
     for (const item of album_items.value) {
         if (isImage(item) && item.paths) {
             const obj = {
-                src: item.paths[item.max_width],
+                src: largestImage(item),
                 srcset: item.srcset?.join(', ') ?? '',
                 aspect: item.max_width / item.max_height,
             };

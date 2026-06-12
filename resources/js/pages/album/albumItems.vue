@@ -10,6 +10,7 @@ import {
 import { viewedImage } from '@/actions/App/Http/Controllers/ViewController';
 import { debounce } from '@/lib/debounce';
 import { toggleGigante } from '@/lib/gigante/gigante';
+import { smallestImage } from '@/lib/utils';
 import { isImage, isTextBox } from '@/types/models';
 import type { AlbumItem } from '@/types/models';
 
@@ -124,7 +125,6 @@ type AlbItem = ImageItem | TextBoxItem;
 
 const computedItems = computed(() => {
     const rtn: AlbItem[] = [];
-    const vw = typeof window !== 'undefined' ? window.innerWidth : 2000;
     let col = 0;
     const sizes = '(max-width: 767px) 100vw';
 
@@ -150,33 +150,17 @@ const computedItems = computed(() => {
                 }
             }
 
-            const maxImgWidth = vw;
-
-            let width = maxImgWidth;
-            let smallestWidth = 2000;
-
-            for (const w in item.paths) {
-                const wNum = parseInt(w);
-
-                if (item.paths.hasOwnProperty(w) && wNum >= maxImgWidth) {
-                    if (wNum < width) {
-                        width = wNum;
-                    }
-                }
-
-                if (item.paths.hasOwnProperty(w) && smallestWidth > wNum) {
-                    smallestWidth = wNum;
-                }
-            }
-
+            // Calculate the absolute minimum width the image can be, for the
+            // initial load. The `240`px is based on the calculated min-height
+            // from `md:min-h-60`, and should be updated if that does.
             const minWidth = Math.round(
-                (item.max_width / item.max_height) * 384,
+                (item.max_width / item.max_height) * 240,
             );
 
             _item.type = 'image';
             _item.srcset = srcset.join(',');
             _item.sizes = sizes + ', ' + minWidth + 'px';
-            _item.src = item.paths[smallestWidth];
+            _item.src = smallestImage(item) ?? '';
             _item.aspect = item.max_width / item.max_height;
             _item.desc = item.description ?? '';
             _item.width = item.max_width;
