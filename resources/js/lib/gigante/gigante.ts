@@ -2,7 +2,11 @@ import './gigante.css';
 
 let viewContainer: HTMLElement;
 export function toggleGigante(ev: MouseEvent) {
-    const i = ev.target;
+    let i = ev.target;
+
+    if (!(i instanceof HTMLImageElement) && i instanceof Element) {
+        i = i.querySelector('img');
+    }
 
     if (i instanceof HTMLImageElement) {
         const rect = i.getClientRects().item(0);
@@ -47,6 +51,8 @@ export function toggleGigante(ev: MouseEvent) {
                 viewContainer.style.height = '100vh';
             });
         }
+    } else {
+        console.debug('event target not an image element');
     }
 }
 

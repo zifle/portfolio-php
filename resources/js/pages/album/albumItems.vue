@@ -219,6 +219,9 @@ function showFullImage(id: number, ev: PointerEvent) {
             class="image-container w-full md:max-h-[80vh] md:min-h-60 md:w-min xl:min-h-96"
             :style="'aspect' in item ? `aspect-ratio: ${item.aspect};` : ''"
             style="flex: 1 1 auto; max-width: fit-content"
+            @click="
+                item.type === 'image' ? showFullImage(item.id, $event) : null
+            "
         >
             <img
                 v-if="item.type === 'image'"
@@ -226,7 +229,6 @@ function showFullImage(id: number, ev: PointerEvent) {
                 :sizes="item.sizes"
                 :src="item.src"
                 class="image h-full object-contain opacity-0"
-                @click="showFullImage(item.id, $event)"
                 :alt="item.desc"
                 :width="item.width"
                 :height="item.height"
@@ -260,5 +262,15 @@ function showFullImage(id: number, ev: PointerEvent) {
 
 .text-box {
     white-space: pre-wrap;
+}
+
+.image-container .image {
+    user-drag: none; /* Disable dragging */
+    user-select: none; /* Disable selection */
+    -webkit-user-drag: none; /* For WebKit browsers (Chrome and Safari) */
+    -webkit-user-select: none;
+    -moz-user-select: none; /* For Firefox */
+    -ms-user-select: none; /* For Internet Explorer */
+    pointer-events: none;
 }
 </style>

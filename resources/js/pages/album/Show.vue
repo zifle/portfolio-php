@@ -115,6 +115,14 @@ const loadSpinner = useTemplateRef('load-spinner');
 
     filter: blur(10px) grayscale(100%) contrast(150%);
     opacity: 0.3;
+
+    user-drag: none; /* Disable dragging */
+    user-select: none; /* Disable selection */
+    -webkit-user-drag: none; /* For WebKit browsers (Chrome and Safari) */
+    -webkit-user-select: none;
+    -moz-user-select: none; /* For Firefox */
+    -ms-user-select: none; /* For Internet Explorer */
+    pointer-events: none; /* Disable right-click and long-press */
 }
 
 @keyframes move-slow {
