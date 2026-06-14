@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import { Head, InfiniteScroll, usePage, router } from '@inertiajs/vue3';
+import {
+    Head,
+    InfiniteScroll,
+    usePage,
+    router,
+    useForm,
+} from '@inertiajs/vue3';
+import { Form } from '@inertiajs/vue3';
 import { Trash2, Aperture, Cone, Gauge, Camera, Settings } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { toast } from 'vue-sonner';
 import {
     index,
@@ -28,15 +35,17 @@ const props = defineProps([
     'unused_count',
     'total_count',
     'filter',
+    'sort',
 ]);
 const csrf_token = page.props.csrf_token as string;
 
-type ImagesFilter = {
-    used?: null | string;
-};
-const filter = computed(() => {
-    return props.filter as ImagesFilter;
+const filterForm = useForm({
+    filter: props.filter,
+    sort: props.sort,
 });
+function refreshFilter() {
+    filterForm.get('');
+}
 
 async function deleteImage(id: number) {
     await fetch(destroy(id).url, {
@@ -49,7 +58,7 @@ async function deleteImage(id: number) {
     toast.success('Image deleted');
 
     router.visit(index(), {
-        data: { filter: filter.value },
+        data: { filter: props.filter, sort: props.sort },
         only: ['pagination', 'unused_count', 'total_count'],
         reset: ['pagination', 'unused_count', 'total_count'],
     });
@@ -66,7 +75,7 @@ async function deleteUnused() {
     toast.success('Images deleted');
 
     router.visit(index(), {
-        data: { filter: filter.value },
+        data: { filter: props.filter, sort: props.sort },
         only: ['pagination', 'unused_count', 'total_count'],
         reset: ['pagination', 'unused_count', 'total_count'],
     });
@@ -94,28 +103,6 @@ async function updateImageRating(im: Image, rating: number) {
 }
 
 const list = ref();
-
-function updateFilter(filter: ImagesFilter) {
-    router.visit(index(), {
-        data: { filter },
-        only: ['pagination', 'filter'],
-        reset: ['pagination', 'filter'],
-    });
-}
-
-function toggleUsedFilter() {
-    const filt = JSON.parse(JSON.stringify(filter.value)) as ImagesFilter;
-
-    if (filt.used === null) {
-        filt.used = 'true';
-    } else if (filt.used === 'true') {
-        filt.used = 'false';
-    } else {
-        delete filt.used;
-    }
-
-    updateFilter(filt);
-}
 </script>
 
 <template>
@@ -123,24 +110,61 @@ function toggleUsedFilter() {
 
     <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
         <h5>Total {{ total_count }} images, with {{ unused_count }} unused</h5>
-        <div class="flex">
-            <button
-                class="btn w-48 btn-sm"
-                :class="{
-                    'btn-success': filter?.used === 'true',
-                    'btn-warning': filter?.used === 'false',
-                }"
-                @click="toggleUsedFilter"
-            >
-                <template v-if="filter?.used === 'true'">
-                    Only used images
-                </template>
-                <template v-else-if="filter?.used === 'false'">
-                    Only unused images
-                </template>
-                <template v-else> All images </template>
-            </button>
-        </div>
+        <Form
+            @submit="filterForm.get('')"
+            class="flex gap-3"
+            disable-while-processing
+            :optimistic="
+                (props, data) => ({
+                    ...props,
+                    filter: data.filter,
+                    sort: data.sort,
+                })
+            "
+            :options="{
+                preserveState: false,
+                preserveUrl: false,
+                replace: true,
+            }"
+        >
+            <label class="floating-label min-w-48">
+                <span>Sort</span>
+                <select
+                    class="select select-sm"
+                    @change="refreshFilter"
+                    v-model="filterForm.sort"
+                >
+                    <option value="id,asc">ID, ascending</option>
+                    <option value="id,desc">ID, descending</option>
+                    <option value="rating,asc">Rating, ascending</option>
+                    <option value="rating,desc">Rating, descending</option>
+                </select>
+            </label>
+            <label class="floating-label min-w-48">
+                <span>Used/unused</span>
+                <select
+                    class="select select-sm"
+                    @change="refreshFilter"
+                    v-model="filterForm.filter.used"
+                >
+                    <option :value="null">Show all</option>
+                    <option value="true">Only used</option>
+                    <option value="false">Only unused</option>
+                </select>
+            </label>
+            <label class="floating-label min-w-48">
+                <span>Description set</span>
+                <select
+                    class="select select-sm"
+                    @change="refreshFilter"
+                    v-model="filterForm.filter.desc"
+                >
+                    <option :value="null">Show all</option>
+                    <option value="true">Has description</option>
+                    <option value="false">Missing description</option>
+                </select>
+            </label>
+        </Form>
         <InfiniteScroll data="pagination" :items-element="() => list">
             <ul
                 class="list rounded-box bg-base-100 shadow-md dark:bg-base-300"

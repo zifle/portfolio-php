@@ -19,18 +19,36 @@ class ImageController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Image::orderBy('id')
-            ->with(['camera', 'lens', 'albums']);
+        $filter = array_merge([
+            'used' => null,
+            'desc' => null,
+        ], $request->input('filter'));
 
-        if ($request->has('filter')) {
-            $filter = $request->input('filter');
+        $sort = 'id,asc';
 
-            if ($filter['used'] === 'false') {
-                $query->whereDoesntHave('albums');
-            } elseif ($filter['used'] === 'true') {
-                $query->whereHas('albums');
-            }
+        if ($request->has('sort')) {
+            $sort = $request->query('sort');
         }
+
+        [$sortBy, $direction] = explode(',', $sort);
+        $direction ??= 'asc';
+
+        $query = Image::orderBy($sortBy, $direction)
+            ->when($filter['used'] !== null, function ($query) use ($request) {
+                if ($request->input('filter.used') === 'false') {
+                    $query->whereDoesntHave('albums');
+                } elseif ($request->input('filter.used') === 'true') {
+                    $query->whereHas('albums');
+                }
+            })
+            ->when($filter['desc'] !== null, function ($query) use ($request) {
+                if ($request->input('filter.desc') === 'false') {
+                    $query->whereNull('description');
+                } elseif ($request->input('filter.desc') === 'true') {
+                    $query->whereNotNull('description');
+                }
+            })
+            ->with(['camera', 'lens', 'albums']);
 
         return Inertia::render('admin/Images', [
             'pagination' => Inertia::scroll(
@@ -38,7 +56,8 @@ class ImageController extends Controller
             ),
             'unused_count' => Image::whereDoesntHave('albums')->count(),
             'total_count' => Image::count(),
-            'filter' => $request->input('filter') ?? ['used' => null],
+            'filter' => $filter,
+            'sort' => $sort,
         ]);
     }
 
