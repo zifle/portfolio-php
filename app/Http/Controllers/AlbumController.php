@@ -33,12 +33,14 @@ class AlbumController extends Controller
         }
         View::share('metaTitle', $album->title);
 
-        try {
-            views($album)->record();
-            if ($album->category) {
-                views($album->category)->record();
+        if (Auth::guest()) {
+            try {
+                views($album)->record();
+                if ($album->category) {
+                    views($album->category)->record();
+                }
+            } catch (\Throwable) {
             }
-        } catch (\Throwable) {
         }
 
         return Inertia::render('album/Show', [
@@ -67,9 +69,11 @@ class AlbumController extends Controller
             }
             View::share('metaTitle', $album->title);
 
-            try {
-                views($album)->record();
-            } catch (\Throwable) {
+            if (Auth::guest()) {
+                try {
+                    views($album)->record();
+                } catch (\Throwable) {
+                }
             }
         }
 
