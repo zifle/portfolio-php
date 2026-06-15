@@ -22,7 +22,7 @@ class ImageController extends Controller
         $filter = array_merge([
             'used' => null,
             'desc' => null,
-        ], $request->input('filter'));
+        ], $request->input('filter', []));
 
         $sort = 'id,asc';
 
