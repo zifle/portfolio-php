@@ -48,8 +48,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="p-2">
-        <div class="relative z-2 w-full max-lg:collapse">
+    <div class="sticky top-0 z-2 p-2">
+        <div
+            class="absolute inset-0 mask-b-from-80% backdrop-blur-sm backdrop-grayscale-50"
+        ></div>
+        <div class="relative w-full max-lg:collapse">
             <input type="checkbox" id="navbar-toggle" class="peer hidden" />
             <label
                 for="navbar-toggle"
@@ -73,8 +76,8 @@ onUnmounted(() => {
                             />
                         </svg>
                     </label>
-                    <a href="/" class="-mt-3">
-                        <AppLogo></AppLogo>
+                    <a href="/" class="ms-3 -mt-1">
+                        <AppLogo class="h-6"></AppLogo>
                     </a>
                 </div>
                 <div class="navbar-center hidden lg:flex">
@@ -89,7 +92,9 @@ onUnmounted(() => {
                         >
                             <details v-if="isCategory(item)">
                                 <summary>{{ item.name }}</summary>
-                                <ul class="z-1 w-60 p-2">
+                                <ul
+                                    class="top-full mt-2 w-60 bg-transparent mask-y-from-90% mask-y-to-100% mask-x-from-58 mask-x-to-100% p-2 backdrop-blur-sm backdrop-grayscale-50"
+                                >
                                     <li
                                         v-for="album in item.albums"
                                         :key="'alb-' + album.slug"
@@ -116,7 +121,7 @@ onUnmounted(() => {
                 </div>
             </div>
 
-            <div class="collapse-content z-1 lg:hidden">
+            <div class="collapse-content lg:hidden">
                 <ul class="menu">
                     <li
                         v-for="item in menu"
@@ -128,7 +133,7 @@ onUnmounted(() => {
                     >
                         <details v-if="isCategory(item)">
                             <summary>{{ item.name }}</summary>
-                            <ul class="z-1 w-60 p-2">
+                            <ul class="w-60 p-2">
                                 <li
                                     v-for="album in item.albums"
                                     :key="'col_alb-' + album.slug"
