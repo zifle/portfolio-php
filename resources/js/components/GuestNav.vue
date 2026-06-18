@@ -50,7 +50,7 @@ onUnmounted(() => {
 <template>
     <div class="sticky top-0 z-2 p-2">
         <div
-            class="absolute inset-0 mask-b-from-80% backdrop-blur-sm backdrop-grayscale-50"
+            class="mask-nav-backdrop absolute inset-0 backdrop-blur-sm backdrop-grayscale-50"
         ></div>
         <div class="relative w-full max-lg:collapse">
             <input type="checkbox" id="navbar-toggle" class="peer hidden" />
@@ -154,4 +154,13 @@ onUnmounted(() => {
     </div>
 </template>
 
-<style scoped></style>
+<style>
+.mask-nav-backdrop {
+    mask-image: linear-gradient(to top, transparent 0, black 10px);
+    background-color: rgba(100%, 100%, 100%, 0.15);
+}
+
+.dark .mask-nav-backdrop {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+</style>
