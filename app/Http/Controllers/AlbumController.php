@@ -77,8 +77,25 @@ class AlbumController extends Controller
             }
         }
 
+        $top6 = Album::orderBy('order')
+            ->when(Auth::guest(), function ($query) {
+                $query->whereNotNull('published_at');
+            })
+            ->whereNot('id', $album->id)
+            ->limit(6)
+            ->with([
+                'images' => function ($query) {
+                    $query->orderByDesc('rating')
+                        ->orderByPivot('order')
+                        ->limit(1);
+                },
+            ])
+            ->get()
+            ->setAppends(['items']);
+
         return Inertia::render('Welcome', [
             'album' => $album,
+            'top6' => $top6,
         ]);
     }
 

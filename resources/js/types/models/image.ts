@@ -29,7 +29,7 @@ export type Image = {
     pivot?: AlbumItemPivot;
     views_count?: number;
 
-    srcset?: string[];
+    srcset: string[];
 };
 
 export type Camera = {

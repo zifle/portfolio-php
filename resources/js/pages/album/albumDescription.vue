@@ -3,7 +3,11 @@ import { Pin, CalendarDays } from '@lucide/vue';
 import { computed } from 'vue';
 import type { Album } from '@/types/models';
 
-const props = defineProps(['album']);
+const props = defineProps({
+    album: Object,
+    noTitle: Boolean,
+    lgNoTitle: Boolean,
+});
 const album = computed(() => props.album as Album);
 
 const useIcons = false;
@@ -50,7 +54,7 @@ const albumDescription = computed(() => {
 <template>
     <div class="album-intro relative z-1 my-5">
         <template v-if="album">
-            <div class="mb-5">
+            <div :class="{ 'lg:hidden': lgNoTitle }" class="mb-5">
                 <h2 class="text-center text-4xl">{{ album.title }}</h2>
                 <p class="text-center">
                     <span v-if="date_start">

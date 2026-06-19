@@ -78,7 +78,7 @@ use Illuminate\Support\Str;
  *
  * @mixin \Eloquent
  */
-#[Appends(['paths'])]
+#[Appends(['paths', 'srcset'])]
 class Image extends Model implements Viewable
 {
     /** @use HasFactory<ImageFactory> */
