@@ -10,6 +10,7 @@ import { Form } from '@inertiajs/vue3';
 import { Trash2, Aperture, Cone, Gauge, Camera, Settings } from '@lucide/vue';
 import { ref } from 'vue';
 import { toast } from 'vue-sonner';
+import { debounce } from '@/lib/debounce';
 import {
     index,
     destroy,
@@ -43,8 +44,15 @@ const filterForm = useForm({
     filter: props.filter,
     sort: props.sort,
 });
+const refreshDB = debounce(() => {
+    filterForm.get('', {
+        preserveState: true,
+        preserveUrl: false,
+        replace: true,
+    });
+}, 200);
 function refreshFilter() {
-    filterForm.get('');
+    refreshDB();
 }
 
 async function deleteImage(id: number) {
@@ -111,8 +119,8 @@ const list = ref();
     <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
         <h5>Total {{ total_count }} images, with {{ unused_count }} unused</h5>
         <Form
-            @submit="filterForm.get('')"
-            class="flex gap-3"
+            @submit.prevent="refreshFilter"
+            class="flex flex-wrap gap-3"
             disable-while-processing
             :optimistic="
                 (props, data) => ({
@@ -121,11 +129,6 @@ const list = ref();
                     sort: data.sort,
                 })
             "
-            :options="{
-                preserveState: false,
-                preserveUrl: false,
-                replace: true,
-            }"
         >
             <label class="floating-label min-w-48">
                 <span>Sort</span>
@@ -163,6 +166,15 @@ const list = ref();
                     <option value="true">Has description</option>
                     <option value="false">Missing description</option>
                 </select>
+            </label>
+            <label class="floating-label min-w-60">
+                <span>Search</span>
+                <input
+                    type="text"
+                    class="input input-sm"
+                    @input="refreshFilter"
+                    v-model="filterForm.filter.search"
+                />
             </label>
         </Form>
         <InfiniteScroll data="pagination" :items-element="() => list">

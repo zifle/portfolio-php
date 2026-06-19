@@ -22,6 +22,7 @@ class ImageController extends Controller
         $filter = array_merge([
             'used' => null,
             'desc' => null,
+            'search' => null,
         ], $request->input('filter', []));
 
         $sort = 'id,asc';
@@ -34,25 +35,32 @@ class ImageController extends Controller
         $direction ??= 'asc';
 
         $query = Image::orderBy($sortBy, $direction)
-            ->when($filter['used'] !== null, function ($query) use ($request) {
-                if ($request->input('filter.used') === 'false') {
+            ->when($filter['used'] !== null, function ($query) use ($filter) {
+                if ($filter['used'] === 'false') {
                     $query->whereDoesntHave('albums');
-                } elseif ($request->input('filter.used') === 'true') {
+                } elseif ($filter['used'] === 'true') {
                     $query->whereHas('albums');
                 }
             })
-            ->when($filter['desc'] !== null, function ($query) use ($request) {
-                if ($request->input('filter.desc') === 'false') {
+            ->when($filter['desc'] !== null, function ($query) use ($filter) {
+                if ($filter['desc'] === 'false') {
                     $query->whereNull('description');
-                } elseif ($request->input('filter.desc') === 'true') {
+                } elseif ($filter['desc'] === 'true') {
                     $query->whereNotNull('description');
                 }
+            })
+            ->when($filter['search'] !== null, function ($query) use ($filter) {
+                $query->where(function (Builder $query) use ($filter) {
+                    $query->orWhereHas('albums', function ($query) use ($filter) {
+                        $query->where('title', 'like', '%'.$filter['search'].'%');
+                    });
+                });
             })
             ->with(['camera', 'lens', 'albums']);
 
         return Inertia::render('admin/Images', [
             'pagination' => Inertia::scroll(
-                fn () => $query->cursorPaginate(30)
+                fn () => $query->paginate(30)
             ),
             'unused_count' => Image::whereDoesntHave('albums')->count(),
             'total_count' => Image::count(),
